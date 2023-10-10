@@ -1,0 +1,144 @@
+{
+  "name": "uvls-code",
+  "displayName": "UVLS - Universal Variability Language Server",
+  "description": "VSCode frontend for UVLS",
+  "version": "0.0.11",
+  "publisher": "caradhras",
+  "icon": "assets/uvls-256.png",
+  "engines": {
+    "vscode": "^1.73.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Universal-Variability-Language/uvl-lsp"
+  },
+  "activationEvents": [
+    "onLanguage:uvl",
+    "onLanguage:json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "uvls.check_for_updates",
+        "title": "Check for updates",
+        "category": "UVLS"
+      },
+      {
+        "command": "uvls.restart",
+        "title": "Restart the server",
+        "category": "UVLS"
+      },
+      {
+        "command":"uvls/open_web",
+        "title": "open a link",
+        "category": "UVLS"
+      },
+      {
+        "command":"uvls.generate_diagram",
+        "title": "Generate a DOT file to visualize with Graphviz",
+        "category": "UVLS",
+        "icon": "$(repo-forked)"
+      }
+    ],
+    "languages": [
+      {
+        "id": "uvl",
+        "extensions": [
+          ".uvl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "UVL Language Server",
+      "properties": {
+        "uvls.path": {
+          "scope": "resource",
+          "type": "string",
+          "description": "Path to `uvls` executable. Example: `C:/uvls/target/release/uvls.exe`.",
+          "format": "path"
+        },
+        "uvls.auto_update": {
+          "scope": "resource",
+          "type": "boolean",
+          "description": "check for updates",
+          "default": true
+        }
+      }
+    },
+    "colors": [
+      {
+        "id": "color.deadfeature",
+        "description": "color Theme for dead feature",
+        "defaults": {
+          "dark": "#f34c4c",
+					"light": "#f34c4c"
+        }
+      }, {
+        "id": "color.voidfeature",
+        "description": "color Theme for void feature feature",
+        "defaults": {
+          "dark": "#ff3333e5",
+					"light": "#ff3333e5"
+        }
+      }, {
+        "id": "color.yellow",
+        "description": "color Theme for redudant Constraint and false-optional feature",
+        "defaults": {
+          "dark": "#8f8b66",
+					"light": "#ffef93d2"
+        }
+      }
+    ],
+    "keybindings": [
+        {
+          "command": "uvls.generate_diagram",
+          "key": "ctrl+G",
+          "mac": "cmd+G",
+          "when": "editorLangId == uvl"
+        }
+    ],
+    "menus": {
+        "editor/title": [{
+            "command": "uvls.generate_diagram",
+            "group": "navigation",
+            "when": "editorLangId == uvl"
+        }]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild --bundle --sourcemap=external --external:vscode src/extension.ts --outdir=out --platform=node --format=cjs",
+    "watch": "esbuild --watch --bundle --sourcemap=external --external:vscode src/extension.ts --outdir=out --platform=node --format=cjs",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^16.18.9",
+    "@types/vscode": "^1.73.0",
+    "@types/which": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "@vscode/test-electron": "^2.2.0",
+    "esbuild": "^0.15.18",
+    "eslint": "^8.26.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.1.0",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "@types/adm-zip": "^0.5.0",
+    "@types/mkdirp": "^1.0.2",
+    "adm-zip": "^0.5.9",
+    "axios": "^0.27.2",
+    "mkdirp": "^1.0.4",
+    "vscode-languageclient": "^8.0.2",
+    "which": "^3.0.0"
+  }
+}
