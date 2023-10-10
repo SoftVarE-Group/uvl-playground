@@ -1,0 +1,12 @@
+version: "2.2"
+services:
+  codeserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ~/.local:/home/coder/.local
+      - ~/.config:/home/coder/.config
+      - $PWD:/home/coder/project
+    ports:
+      - "8080:8080"
