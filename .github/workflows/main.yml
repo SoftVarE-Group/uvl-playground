@@ -3,7 +3,9 @@ name: Deploy to Remote Server
 on:
   push:
     branches:
-      - main
+      - master
+    paths:
+      - 'prototype/**'
 
 jobs:
   deploy:
@@ -24,6 +26,11 @@ jobs:
 
       - name: Copy directory to remote server
         run: |
-          scp -r ./ls_wrapper ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org:/home/ubuntu/server
+          scp -r ./prototype ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org:/home/ubuntu/server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Run remote script
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org 'bash -s' < /home/ubuntu/deployment.sh
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
