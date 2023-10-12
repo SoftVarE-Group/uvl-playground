@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "skipLibCheck": true
+  },
+  "references": [{
+    "path": "../../client/tsconfig.src.json"
+  },
+  {
+    "path": "../../examples/tsconfig.src.json"
+  }],
+  "include": [
+    "src/**/*.ts",
+  ]
+}
