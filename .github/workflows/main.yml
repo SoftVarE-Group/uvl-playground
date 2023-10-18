@@ -1,11 +1,14 @@
-name: Deploy to Remote Server
+name: Deploy playground website
+
+env:
+  HOSTNAME: 590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org
 
 on:
   push:
     branches:
       - master
     paths:
-      - 'prototype/**'
+      - 'WebSocketClient/**'
 
 jobs:
   deploy:
@@ -14,23 +17,33 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
       - name: Install SSH key
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org >> ~/.ssh/known_hosts
+          ssh-keyscan -H $HOSTNAME >> ~/.ssh/known_hosts
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Copy directory to remote server
         run: |
-          scp -r ./prototype ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org:/home/ubuntu/server
+          scp -r ./WebSocketClient/UVLPlayground/dist/ ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
+      - name: Copy deployment script to remote server
+        run: |
+          scp -r ./WebSocketClient/deployment.sh ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Run remote script
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org 'bash /home/ubuntu/server/prototype/deployment.sh'
+          ssh -i ~/.ssh/id_rsa ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org 'cd WebSocketLanguageServer && chmod +x ./deployment.sh && ./deployment.sh'
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
