@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: switch to client directory
+        run: cd WebSocketClient/UVLPlayground
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
@@ -36,9 +38,10 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Copy directory to remote server
         run: |
-          scp -r ./WebSocketClient/UVLPlayground/dist/ ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
+          scp -r ./dist/ ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
       - name: Copy deployment script to remote server
         run: |
+          cd ../..
           scp -r ./WebSocketClient/deployment.sh ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
