@@ -24,6 +24,8 @@ jobs:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: WebSocketClient/UVLPlayground/package-lock.json
+      - name: switch to client directory
+        run: cd WebSocketClient/UVLPlayground
       - name: Install dependencies
         run: npm install
       - name: Build
