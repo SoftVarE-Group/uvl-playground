@@ -2,8 +2,8 @@ FROM node:18
 # Create app directory
 WORKDIR /usr/src/app
 
-RUN apt-get update
-RUN apt-get install z3
+#RUN apt-get update
+#RUN apt-get install z3
 
 COPY package*.json ./
 
