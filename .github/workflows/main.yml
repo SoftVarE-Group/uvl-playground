@@ -24,11 +24,11 @@ jobs:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: WebSocketClient/UVLPlayground/package-lock.json
-      - name: switch to client directory
-        run: cd WebSocketClient/UVLPlayground
       - name: Install dependencies
+        working-directory: WebSocketClient/UVLPlayground
         run: npm install
       - name: Build
+        working-directory: WebSocketClient/UVLPlayground
         run: npm run build
       - name: Install SSH key
         run: |
@@ -40,7 +40,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Copy directory to remote server
         run: |
-          scp -r ./dist/ ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
+          scp -r .WebSocketClient/UVLPlayground/dist/ ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
       - name: Copy deployment script to remote server
         run: |
           cd ../..
