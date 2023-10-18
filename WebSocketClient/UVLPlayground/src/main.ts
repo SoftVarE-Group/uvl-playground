@@ -143,7 +143,7 @@ export const startPythonClient = async () => {
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
     createWebSocket(createUrl(
-        process.env.UVLS_HOST_NAME === undefined ? 'http://590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org/' : process.env.UVLS_HOST_NAME,
+        process.env.UVLS_HOST_NAME === undefined ? '590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org' : process.env.UVLS_HOST_NAME,
          process.env.PORT === undefined ? 30000 : parseInt(process.env.PORT),
          '/pyright', {
         // Used to parse an auth token or additional parameters such as import IDs to the language server
