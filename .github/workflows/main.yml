@@ -18,13 +18,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: switch to client directory
-        run: cd WebSocketClient/UVLPlayground
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
+          cache-dependency-path: WebSocketClient/UVLPlayground/package-lock.json
       - name: Install dependencies
         run: npm install
       - name: Build
