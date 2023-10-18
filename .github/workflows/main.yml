@@ -41,6 +41,8 @@ jobs:
       - name: Copy directory to remote server
         run: |
           scp -r ./WebSocketClient/UVLPlayground/dist/ ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
+      - name: Copy Dockerfile to remote server
+        run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
       - name: Copy deployment script to remote server
         run: |
           scp -r ./WebSocketClient/deployment.sh ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
