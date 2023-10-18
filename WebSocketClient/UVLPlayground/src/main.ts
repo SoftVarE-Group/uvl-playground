@@ -138,7 +138,7 @@ export const startPythonClient = async () => {
     }`);
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
-    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/fm.uvl'), 'features\n\tfeature1\n\nconstraints\n\t!feature1'));
+    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/fm.uvl'), 'features\n\tfeature1\n\nconstraints\n\tfeature1'));
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
