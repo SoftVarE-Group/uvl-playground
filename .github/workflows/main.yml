@@ -9,6 +9,7 @@ on:
       - master
     paths:
       - 'WebSocketClient/**'
+  workflow_dispatch:
 
 jobs:
   deploy:
