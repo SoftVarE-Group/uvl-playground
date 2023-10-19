@@ -2,13 +2,16 @@ name: Deploy WebSocket Language Server
 
 env:
   HOSTNAME: 590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org
-  
+  USERNAME: ubuntu
+  WORKDIR: /home/ubuntu
+
 on:
   push:
     branches:
       - master
     paths:
-      - 'WebSocketLanguageServer/**'
+      - "WebSocketLanguageServer/**"
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -17,7 +20,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
       - name: Install SSH key
         run: |
           mkdir -p ~/.ssh
@@ -26,14 +28,13 @@ jobs:
           ssh-keyscan -H $HOSTNAME >> ~/.ssh/known_hosts
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Copy directory to remote server
         run: |
-          scp -r ./WebSocketLanguageServer ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org:/home/ubuntu
+          scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Run remote script
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org 'cd WebSocketLanguageServer && chmod +x ./deployment.sh && ./deployment.sh'
+          ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'cd WebSocketLanguageServer && chmod +x ./deployment.sh && ./deployment.sh'
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}

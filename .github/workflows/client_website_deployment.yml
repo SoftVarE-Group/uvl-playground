@@ -2,13 +2,15 @@ name: Deploy playground website
 
 env:
   HOSTNAME: 590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org
+  USERNAME: ubuntu
+  WORKDIR: /home/ubuntu/WebSocketClient
 
 on:
   push:
     branches:
       - master
     paths:
-      - 'WebSocketClient/**'
+      - "WebSocketClient/**"
   workflow_dispatch:
 
 jobs:
@@ -22,7 +24,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: WebSocketClient/UVLPlayground/package-lock.json
       - name: Install dependencies
         working-directory: WebSocketClient/UVLPlayground
@@ -40,16 +42,16 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Copy directory to remote server
         run: |
-          scp -r ./WebSocketClient/UVLPlayground/dist/ ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
+          scp -r ./WebSocketClient/UVLPlayground/dist/ $USERNAME@$HOSTNAME:$WORKDIR
       - name: Copy Dockerfile to remote server
-        run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
+        run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR
       - name: Copy deployment script to remote server
         run: |
-          scp -r ./WebSocketClient/deployment.sh ubuntu@$HOSTNAME:/home/ubuntu/WebSocketClient
+          scp -r ./WebSocketClient/deployment.sh $USERNAME@$HOSTNAME:$WORKDIR
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Run remote script
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org 'cd WebSocketClient && chmod +x ./deployment.sh && ./deployment.sh'
+          ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'cd WebSocketClient && chmod +x ./deployment.sh && ./deployment.sh'
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
