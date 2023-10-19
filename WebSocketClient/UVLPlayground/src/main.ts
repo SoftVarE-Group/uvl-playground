@@ -19,6 +19,7 @@ import { CloseAction, ErrorAction, MessageTransports } from 'vscode-languageclie
 import { WebSocketMessageReader, WebSocketMessageWriter, toSocket } from 'vscode-ws-jsonrpc';
 import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredMemoryFile } from 'vscode/service-override/files';
 import { Uri } from 'vscode';
+import config from './config.js';
 //import { createUrl } from '../../common.js';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
@@ -142,10 +143,7 @@ export const startPythonClient = async () => {
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
-    createWebSocket(createUrl(
-        process.env.UVLS_HOST_NAME === undefined ? '590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org' : process.env.UVLS_HOST_NAME,
-         process.env.PORT === undefined ? 30000 : parseInt(process.env.PORT),
-         '/pyright', {
+    createWebSocket(createUrl(config.languageServerHostName,config.port,'/pyright', {
         // Used to parse an auth token or additional parameters such as import IDs to the language server
         authorization: 'UserAuth'
         // By commenting above line out and commenting below line in, connection to language server will be denied.
