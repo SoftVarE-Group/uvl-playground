@@ -31,6 +31,7 @@ let languageClient: MonacoLanguageClient;
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean = location.protocol === 'https:'): string => {
     const protocol = secure ? 'wss' : 'ws';
     const url = new URL(`${protocol}://${hostname}:${port}${path}`);
+    console.log(url);
 
     for (let [key, value] of Object.entries(searchParams)) {
         if (value instanceof Array) {
