@@ -1,6 +1,6 @@
 export default {
     languageServerBinary: 'lib/uvls',
     Z3Binary: '',
-    port: 8010,
+    port: 30000,
     languageServerPathName: '/pyright',
 };
