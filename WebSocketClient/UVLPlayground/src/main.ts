@@ -28,7 +28,7 @@ buildWorkerDefinition('../../../node_modules/monaco-editor-workers/dist/workers/
 const languageId = 'python';
 let languageClient: MonacoLanguageClient;
 
-const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean = location.protocol === 'https:'): string => {
+const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     console.log(secure);
     const protocol = secure ? 'wss' : 'ws';
     console.log(protocol);
@@ -153,7 +153,7 @@ export const startPythonClient = async () => {
         authorization: 'UserAuth'
         // By commenting above line out and commenting below line in, connection to language server will be denied.
         // authorization: 'FailedUserAuth'
-    }, false));
+    }, location.protocol === 'https:'));
 
 
     // use the file create before
