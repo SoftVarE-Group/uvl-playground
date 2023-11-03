@@ -1,19 +1,16 @@
 version: "2.2"
 services:
-  codeserver:
+  language-server:
     build:
-      context: ./code-server
-      dockerfile: Dockerfile
-    volumes:
-      - ~/.local:/home/coder/.local
-      - ~/.config:/home/coder/.config
-      # - $PWD:/home/coder/project # Map current directory directly in the IDE
+        context: ./WebSocketLanguageServer
+        dockerfile: Dockerfile
+    hostname: language-server
     ports:
-      - "80:8080"
+      - "30000:30000"
 
-  language_server:
+  web-server:
     build:
-      context: ./ls_wrapper
-      dockerfile: Dockerfile
+        context: ./WebSocketClient/UVLPlayground
+        dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+     - "8000:80"

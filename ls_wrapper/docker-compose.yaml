@@ -1,8 +1,0 @@
-version: "2.2"
-services:
-  language_server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
