@@ -90,7 +90,6 @@ export const runUVLServer = () => {
     server.on('upgrade', (request: IncomingMessage, socket: Socket, head: Buffer) => {
         const baseURL = `http://${request.headers.host}/`;
         const pathname = request.url ? new URL(request.url, baseURL).pathname : undefined;
-        if (pathname === config.languageServerPathName) {
             wss.handleUpgrade(request, socket, head, webSocket => {
                 const socket: IWebSocket = {
                     send: content => webSocket.send(content, error => {
@@ -114,7 +113,6 @@ export const runUVLServer = () => {
                     });
                 }
             });
-        }
     });
 };
 

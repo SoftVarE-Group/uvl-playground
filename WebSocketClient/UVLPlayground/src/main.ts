@@ -137,7 +137,7 @@ export const startPythonClient = async () => {
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
-    createWebSocket(createUrl(config.languageServerHostName,config.port,'/uvl', {
+    createWebSocket(createUrl(config.languageServerHostName,config.port,'/', {
         // Used to parse an auth token or additional parameters such as import IDs to the language server
         authorization: 'UserAuth'
         // By commenting above line out and commenting below line in, connection to language server will be denied.
