@@ -46,7 +46,7 @@ jobs:
         run: |
           scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
           scp -r ./WebSocketClient/UVLPlayground/dist $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
-          scp -r ./WebSocketClient/UVLPlayground/node_modules $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
+          scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
           scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
       - name: Build and run containers
         run: ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'pwd && docker compose up --build -d'
