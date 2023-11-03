@@ -29,7 +29,7 @@ jobs:
         working-directory: WebSocketClient/UVLPlayground
         run: npm install
       - name: Set hostname for WebSocketLanguageServer
-        run: sed -i 's/languageServerHostName: .*/languageServerHostName: "$HOSTNAME",/' ./WebSocketClient/UVLPlayground/src/config.ts
+        run: sed -i 's/format(languageServerHostName{0}, ':') .*/format(languageServerHostName{0}, ':') "$HOSTNAME",/' ./WebSocketClient/UVLPlayground/src/config.ts
       - name: Build
         working-directory: WebSocketClient/UVLPlayground
         run: npm run build
