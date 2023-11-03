@@ -17,7 +17,7 @@ import { initServices, MonacoLanguageClient } from 'monaco-languageclient';
 import { CloseAction, ErrorAction, MessageTransports } from 'vscode-languageclient';
 import { WebSocketMessageReader, WebSocketMessageWriter, toSocket } from 'vscode-ws-jsonrpc';
 import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredMemoryFile } from 'vscode/service-override/files';
-import { Uri } from 'vscode';
+import {LogLevel, Uri} from 'vscode';
 import config from './config.js';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
@@ -89,6 +89,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
 
 export const startPythonClient = async () => {
     // init vscode-api
+    const useDebugLogging = config.debug ? LogLevel.Debug : LogLevel.Off;
     await initServices({
         userServices: {
             ...getThemeServiceOverride(),
@@ -96,6 +97,8 @@ export const startPythonClient = async () => {
             ...getConfigurationServiceOverride(Uri.file('/workspace')),
             ...getKeybindingsServiceOverride()
         },
+        debugLogging: config.debug,
+        logLevel: useDebugLogging,
     });
 
     await whenReady();
