@@ -5,6 +5,7 @@ services:
         context: ./WebSocketLanguageServer
         dockerfile: Dockerfile
     hostname: language-server
+    restart: on-failure
     ports:
       - "30000:30000"
 
@@ -12,5 +13,6 @@ services:
     build:
         context: ./WebSocketClient/UVLPlayground
         dockerfile: Dockerfile
+    restart: on-failure
     ports:
      - "8000:80"
