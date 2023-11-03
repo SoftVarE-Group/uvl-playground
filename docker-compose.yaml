@@ -5,6 +5,7 @@ services:
         context: ./WebSocketLanguageServer
         dockerfile: Dockerfile
     hostname: language-server
+    restart: on-failure
     ports:
       - "30000:30000"
 
