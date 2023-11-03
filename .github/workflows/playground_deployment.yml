@@ -41,11 +41,11 @@ jobs:
       - name: Copy directories to remote server
         run: |
           scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
-          scp -r ./WebSocketClient/UVLPlayground/dist/ $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
+          scp -r ./WebSocketClient/UVLPlayground/dist/ $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Copy Dockerfile to remote server
-        run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
+        run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
       - name: Copy Compose file
         run: scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
       - name: Build and run containers
