@@ -7,7 +7,6 @@ import * as monaco from 'monaco-editor';
 import * as vscode from 'vscode';
 import { whenReady } from '@codingame/monaco-vscode-theme-defaults-default-extension';
 import '@codingame/monaco-vscode-python-default-extension';
-import { LogLevel } from 'vscode/services';
 import { createConfiguredEditor, createModelReference } from 'vscode/monaco';
 import { ExtensionHostKind, registerExtension } from 'vscode/extensions';
 import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override';
@@ -22,7 +21,7 @@ import { Uri } from 'vscode';
 import config from './config.js';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
-buildWorkerDefinition('../../../node_modules/monaco-editor-workers/dist/workers/', new URL('', window.location.href).href, false);
+buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
 let languageClient: MonacoLanguageClient;
@@ -97,8 +96,6 @@ export const startPythonClient = async () => {
             ...getConfigurationServiceOverride(Uri.file('/workspace')),
             ...getKeybindingsServiceOverride()
         },
-        debugLogging: true,
-        logLevel: LogLevel.Debug
     });
 
     await whenReady();

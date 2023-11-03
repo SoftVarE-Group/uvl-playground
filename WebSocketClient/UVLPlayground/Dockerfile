@@ -3,6 +3,7 @@ FROM nginx:latest
 
 # Copy your static files into the Nginx document root directory
 COPY dist /usr/share/nginx/html
+COPY node_modules /usr/share/nginx/html/node_modules
 
 # Optional: Copy a custom Nginx configuration file
 # COPY nginx.conf /etc/nginx/nginx.conf
