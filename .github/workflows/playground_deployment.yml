@@ -4,6 +4,7 @@ env:
   HOSTNAME: 590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org
   USERNAME: ubuntu
   WORKDIR: /home/ubuntu
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 on:
   push:
@@ -36,20 +37,11 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $HOSTNAME >> ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Copy directories to remote server
+      - name: Copy all necessary files to remote server
         run: |
           scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
           scp -r ./WebSocketClient/UVLPlayground/dist $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Copy Dockerfile to remote server
-        run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
-      - name: Copy Compose file
-        run: scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
+          scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
+          scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
       - name: Build and run containers
-        run: |
-          ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'pwd && docker compose up --build -d'
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'pwd && docker compose up --build -d'
