@@ -12,5 +12,6 @@ services:
     build:
         context: ./WebSocketClient/UVLPlayground
         dockerfile: Dockerfile
+    restart: on-failure
     ports:
      - "8000:80"
