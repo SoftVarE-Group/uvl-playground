@@ -40,7 +40,6 @@ const createUrl = (hostname: string, port: number, path: string, searchParams: R
             url.searchParams.set(key, value);
         }
     }
-    console.log(url.toString());
     return url.toString();
 };
 
@@ -103,10 +102,7 @@ export const startPythonClient = async () => {
         logLevel: LogLevel.Debug
     });
 
-    console.log('Before ready themes');
     await whenReady();
-    console.log('After ready themes');
-
     // extension configuration derived from:
     // https://github.com/microsoft/pyright/blob/main/packages/vscode-pyright/package.json
     // only a minimum is required to get pyright working
