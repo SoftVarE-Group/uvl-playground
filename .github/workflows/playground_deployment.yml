@@ -41,7 +41,7 @@ jobs:
       - name: Copy directories to remote server
         run: |
           scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
-          scp -r ./WebSocketClient/UVLPlayground/dist/ $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
+          scp -r ./WebSocketClient/UVLPlayground/dist $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Copy Dockerfile to remote server
