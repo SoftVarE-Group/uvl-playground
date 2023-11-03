@@ -37,4 +37,3 @@ Currently, the language server as well as the website are hosted on the same ser
   - create ssh key
 - change the `SSH_PRIVATE_KEY` github secret to the new private key
 - change the variables for hostname, username and working directory on the server at the beginning of the workflow files under `.github/workflows`
-- change the config files `WebSocketClient/UVLPlayground/src/config.ts` and `WebSocketLanguageServer/src/config.ts` accordingly
