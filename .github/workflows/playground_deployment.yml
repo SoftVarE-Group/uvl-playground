@@ -48,6 +48,7 @@ jobs:
         run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
       - name: Run remote script
         run: |
+          pwd
           ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'cd WebSocketLanguageServer && chmod +x ./deployment.sh && ./deployment.sh'
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
