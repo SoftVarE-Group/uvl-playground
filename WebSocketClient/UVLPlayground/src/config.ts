@@ -1,4 +1,4 @@
 export default {
-    port: 8010,
+    port: 30000,
     languageServerHostName: "localhost",
 };
