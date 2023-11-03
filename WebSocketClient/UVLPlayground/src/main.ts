@@ -20,12 +20,11 @@ import { WebSocketMessageReader, WebSocketMessageWriter, toSocket } from 'vscode
 import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredMemoryFile } from 'vscode/service-override/files';
 import { Uri } from 'vscode';
 import config from './config.js';
-//import { createUrl } from '../../common.js';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('../../../node_modules/monaco-editor-workers/dist/workers/', new URL('', window.location.href).href, false);
 
-const languageId = 'python';
+const languageId = 'uvls';
 let languageClient: MonacoLanguageClient;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
@@ -61,7 +60,7 @@ const createWebSocket = (url: string): WebSocket => {
 
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
     return new MonacoLanguageClient({
-        name: 'Pyright Language Client',
+        name: 'UVL Language Client',
         clientOptions: {
             // use a language id as a document selector
             documentSelector: [languageId],
@@ -107,7 +106,7 @@ export const startPythonClient = async () => {
     // https://github.com/microsoft/pyright/blob/main/packages/vscode-pyright/package.json
     // only a minimum is required to get pyright working
     const extension = {
-        name: 'python-client',
+        name: 'uvl-client',
         publisher: 'monaco-languageclient-project',
         version: '1.0.0',
         engines: {
@@ -117,11 +116,10 @@ export const startPythonClient = async () => {
             languages: [{
                 id: languageId,
                 aliases: [
-                    'Python'
+                    'UVL'
                 ],
                 extensions: [
-                    '.py',
-                    '.pyi'
+                    '.uvl',
                 ]
             }]
         }
@@ -139,7 +137,7 @@ export const startPythonClient = async () => {
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
-    createWebSocket(createUrl(config.languageServerHostName,config.port,'/pyright', {
+    createWebSocket(createUrl(config.languageServerHostName,config.port,'/uvl', {
         // Used to parse an auth token or additional parameters such as import IDs to the language server
         authorization: 'UserAuth'
         // By commenting above line out and commenting below line in, connection to language server will be denied.
