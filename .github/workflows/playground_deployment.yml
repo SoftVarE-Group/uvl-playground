@@ -46,14 +46,10 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Copy Dockerfile to remote server
         run: scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
-      - name: Run remote script
+      - name: Copy Compose file
+        run: scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
+      - name: Build and run containers
         run: |
-          pwd
-          ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'cd WebSocketLanguageServer && chmod +x ./deployment.sh && ./deployment.sh'
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Run remote script
-        run: |
-          ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'docker compose up --build -d'
+          ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'pwd && docker compose up --build -d'
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
