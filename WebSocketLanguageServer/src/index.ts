@@ -33,12 +33,26 @@ const launchLanguageServer = (socket: IWebSocket) => {
             }
             if (Message.isResponse(message)) {
                 console.log(`${serverName} Server sent:`);
-                console.log(message);
+                logObjectRecursively(message);
             }
             return message;
         });
     }
 };
+
+function logObjectRecursively(obj, depth = 0) {
+    const indent = '  '.repeat(depth);
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            if (typeof obj[key] === 'object' && obj[key] !== null) {
+                console.log(`${indent}${key}:`);
+                logObjectRecursively(obj[key], depth + 1);
+            } else {
+                console.log(`${indent}${key}: ${obj[key]}`);
+            }
+        }
+    }
+}
 
 export const runUVLServer = () => {
     process.on('uncaughtException', function (err: any) {
