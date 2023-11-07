@@ -19,6 +19,7 @@ import { WebSocketMessageReader, WebSocketMessageWriter, toSocket } from 'vscode
 import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredMemoryFile } from 'vscode/service-override/files';
 import {LogLevel, Uri} from 'vscode';
 import config from './config.js';
+import { instance } from "@viz-js/viz";
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
@@ -95,7 +96,7 @@ export const startPythonClient = async () => {
             ...getThemeServiceOverride(),
             ...getTextmateServiceOverride(),
             ...getConfigurationServiceOverride(Uri.file('/workspace')),
-            ...getKeybindingsServiceOverride()
+            ...getKeybindingsServiceOverride(),
         },
         debugLogging: config.debug,
         logLevel: useDebugLogging,
@@ -125,6 +126,18 @@ export const startPythonClient = async () => {
         }
     };
     registerExtension(extension, ExtensionHostKind.LocalProcess);
+    // This works
+    setTimeout(() => vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl').then((res) => console.log(res)), 1000);
+    setTimeout(() => vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl').then((res) => {
+        instance().then(viz => {
+            const div = document.getElementsByClassName("graph");
+            let node = document.createElement("div");
+            node.appendChild(viz.renderSVGElement(res!));
+            div[0].appendChild(node);
+        })
+
+
+    }), 1000);
 
     updateUserConfiguration(`{
         "editor.fontSize": 14,
@@ -133,7 +146,7 @@ export const startPythonClient = async () => {
     }`);
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
-    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/fm.uvl'), 'features\n\tfeature1\n\nconstraints\n\tfeature1'));
+    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/fm.uvl'), 'features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1'));
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
