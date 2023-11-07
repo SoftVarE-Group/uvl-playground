@@ -20,6 +20,7 @@ import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredMemo
 import {LogLevel, Uri} from 'vscode';
 import config from './config.js';
 import { instance } from "@viz-js/viz";
+import { Message } from 'vscode-jsonrpc';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
@@ -77,6 +78,30 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             },
             synchronize: {
                 fileEvents: [vscode.workspace.createFileSystemWatcher('**')]
+            },
+            connectionOptions: {
+                messageStrategy: {
+                    handleMessage(message: Message, next: (message: Message) => void) {
+                        if(Message.isRequest(message)){
+                            console.log("Sending Request");
+                        }
+                        if(Message.isResponse(message)){
+                            console.log("Receiving Response");
+                            let result = message.result;
+                            if(typeof result === "string" || result instanceof String){
+                                if(result.startsWith("digraph")){
+                                    createDiagramFromDot(result as string);
+                                }
+                            }
+                        }
+                        if(Message.isNotification(message)){
+                            console.log("Notification Message");
+                        }
+
+                        console.log(message);
+                        next(message);
+                    }
+                }
             }
         },
         // create a language client connection from the JSON RPC connection on demand
@@ -88,13 +113,16 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
     });
 };
 
+function createDiagramFromDot(res: string): void {
+    instance().then(viz => {
+        const div = document.getElementsByClassName("graph");
+        div[0].replaceChildren(viz.renderSVGElement(res!));
+    });
+}
+
 function generateDiagram(): void {
     vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl')
-        .then((res) => instance().then(viz => {
-            const div = document.getElementsByClassName("graph");
-            div[0].replaceChildren(viz.renderSVGElement(res!));
-        })
-    );
+        .then((res) => createDiagramFromDot(res as string));
 }
 
 export const startPythonClient = async () => {
@@ -135,9 +163,6 @@ export const startPythonClient = async () => {
         }
     };
     registerExtension(extension, ExtensionHostKind.LocalProcess);
-    // This works
-    setTimeout(() => vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl').then((res) => console.log(res)), 1000);
-    setTimeout(() => generateDiagram(), 1000);
 
     const button = document.getElementById("rerender");
     if(button){
