@@ -88,6 +88,15 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
     });
 };
 
+function generateDiagram(): void {
+    vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl')
+        .then((res) => instance().then(viz => {
+            const div = document.getElementsByClassName("graph");
+            div[0].replaceChildren(viz.renderSVGElement(res!));
+        })
+    );
+}
+
 export const startPythonClient = async () => {
     // init vscode-api
     const useDebugLogging = config.debug ? LogLevel.Debug : LogLevel.Off;
@@ -128,16 +137,15 @@ export const startPythonClient = async () => {
     registerExtension(extension, ExtensionHostKind.LocalProcess);
     // This works
     setTimeout(() => vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl').then((res) => console.log(res)), 1000);
-    setTimeout(() => vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl').then((res) => {
-        instance().then(viz => {
-            const div = document.getElementsByClassName("graph");
-            let node = document.createElement("div");
-            node.appendChild(viz.renderSVGElement(res!));
-            div[0].appendChild(node);
-        })
+    setTimeout(() => generateDiagram(), 1000);
 
-
-    }), 1000);
+    const button = document.getElementById("rerender");
+    if(button){
+        button.onclick = () => generateDiagram();
+    }
+    else{
+        console.log("I cannot find the button")
+    }
 
     updateUserConfiguration(`{
         "editor.fontSize": 14,
