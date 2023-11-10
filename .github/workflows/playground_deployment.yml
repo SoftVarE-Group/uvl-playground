@@ -1,7 +1,7 @@
 name: Deploy UVL Playground
 
 env:
-  HOSTNAME: 9d29add1-1c00-4f93-a237-f66f8dab4353.ul.bw-cloud-instance.org
+  HOSTNAME: d08e9b4d-4399-48f6-a5c4-38953812e0f4.ul.bw-cloud-instance.org
   USERNAME: ubuntu
   WORKDIR: /home/ubuntu
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -20,15 +20,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "npm"
-          cache-dependency-path: WebSocketClient/package-lock.json
-      - name: Install dependencies
-        working-directory: WebSocketClient
-        run: npm install
       - name: Set hostname for WebSocketLanguageServer
         run: |
           sed -i "s/languageServerHostName: .*/languageServerHostName: \"$HOSTNAME\",/" ./WebSocketClient/src/config.ts
@@ -37,9 +28,6 @@ jobs:
         run: |
           echo "HOSTNAME=$HOSTNAME" > .env
           echo "EMAIL=$EMAIL" >> .env
-      - name: Build
-        working-directory: WebSocketClient
-        run: npm run build
       - name: Install SSH key
         run: |
           mkdir -p ~/.ssh
@@ -51,8 +39,7 @@ jobs:
         # scp -r ./WebSocketClient/UVLPlayground/node_modules $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
         run: |
           scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
-          scp -r ./WebSocketClient/dist $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
-          scp -r ./WebSocketClient/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
+          scp -r ./WebSocketClient $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
           scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
           scp -r ./.env $USERNAME@$HOSTNAME:$WORKDIR
       - name: Build and run containers
