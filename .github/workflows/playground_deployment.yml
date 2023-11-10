@@ -38,7 +38,7 @@ jobs:
           echo "HOSTNAME=$HOSTNAME" > .env
           echo "EMAIL=$EMAIL" >> .env
       - name: Build
-        working-directory: WebSocketClient/UVLPlayground
+        working-directory: WebSocketClient
         run: npm run build
       - name: Install SSH key
         run: |
