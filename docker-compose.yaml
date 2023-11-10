@@ -41,7 +41,7 @@ services:
 
   webserver:
     build:
-        context: ./WebSocketClient/UVLPlayground
+        context: ./WebSocketClient
         dockerfile: Dockerfile
     restart: on-failure
     networks:
