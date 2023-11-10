@@ -1,7 +1,7 @@
 name: Deploy UVL Playground
 
 env:
-  HOSTNAME: 590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org
+  HOSTNAME: 9d29add1-1c00-4f93-a237-f66f8dab4353.ul.bw-cloud-instance.org
   USERNAME: ubuntu
   WORKDIR: /home/ubuntu
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
