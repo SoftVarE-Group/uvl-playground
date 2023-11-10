@@ -35,8 +35,8 @@ jobs:
           sed -i "s/debug: .*/debug: false,/" ./WebSocketClient/UVLPlayground/src/config.ts
       - name: Set hostname mail for docker compose
         run: |
-          sed -i 's/^HOSTNAME=.*/HOSTNAME=$HOSTNAME/' ./env
-          sed -i 's/^EMAIL=.*/EMAIL=$EMAIL/' ./env
+          sed -i 's/^HOSTNAME=.*/HOSTNAME=$HOSTNAME/' ./.env
+          sed -i 's/^EMAIL=.*/EMAIL=$EMAIL/' ./.env
       - name: Build
         working-directory: WebSocketClient/UVLPlayground
         run: npm run build
