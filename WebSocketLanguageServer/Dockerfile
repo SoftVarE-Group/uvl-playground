@@ -11,7 +11,7 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 30000
+#EXPOSE 30000
 
 RUN npm run build
 

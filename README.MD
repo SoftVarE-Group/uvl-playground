@@ -33,7 +33,7 @@ When your changes are added to the master branch, a github action takes care of 
 Currently, the language server as well as the website are hosted on the same server. To change that, you need to follow these steps:
 
 - set up your new host instance
-  - install and configure docker (must run without sudo)
+  - - install and configure docker (must run without sudo) (version 20.10.24 has a bug, so make sure to install a newer version)
   - create ssh key
 - change the `SSH_PRIVATE_KEY` github secret to the new private key
-- change the variables for hostname, username and working directory on the server at the beginning of the workflow files under `.github/workflows`
+- change the variables for hostname, username, email and working directory on the server at the beginning of the workflow files under `.github/workflows`

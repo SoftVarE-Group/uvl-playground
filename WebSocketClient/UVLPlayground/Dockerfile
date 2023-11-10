@@ -9,7 +9,7 @@ COPY node_modules /usr/share/nginx/html/node_modules
 # COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80 for HTTP traffic (Nginx's default port)
-EXPOSE 80
+# EXPOSE 80
 
 # Start Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
