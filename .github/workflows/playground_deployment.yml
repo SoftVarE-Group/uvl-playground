@@ -25,14 +25,14 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-          cache-dependency-path: WebSocketClient/UVLPlayground/package-lock.json
+          cache-dependency-path: WebSocketClient/package-lock.json
       - name: Install dependencies
-        working-directory: WebSocketClient/UVLPlayground
+        working-directory: WebSocketClient
         run: npm install
       - name: Set hostname for WebSocketLanguageServer
         run: |
-          sed -i "s/languageServerHostName: .*/languageServerHostName: \"$HOSTNAME\",/" ./WebSocketClient/UVLPlayground/src/config.ts
-          sed -i "s/debug: .*/debug: false,/" ./WebSocketClient/UVLPlayground/src/config.ts
+          sed -i "s/languageServerHostName: .*/languageServerHostName: \"$HOSTNAME\",/" ./WebSocketClient/src/config.ts
+          sed -i "s/debug: .*/debug: false,/" ./WebSocketClient/src/config.ts
       - name: Set hostname mail for docker compose
         run: |
           echo "HOSTNAME=$HOSTNAME" > .env
@@ -51,8 +51,8 @@ jobs:
         # scp -r ./WebSocketClient/UVLPlayground/node_modules $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
         run: |
           scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
-          scp -r ./WebSocketClient/UVLPlayground/dist $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
-          scp -r ./WebSocketClient/UVLPlayground/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
+          scp -r ./WebSocketClient/dist $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
+          scp -r ./WebSocketClient/Dockerfile $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
           scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
           scp -r ./.env $USERNAME@$HOSTNAME:$WORKDIR
       - name: Build and run containers
