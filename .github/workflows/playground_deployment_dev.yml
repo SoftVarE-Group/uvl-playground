@@ -24,7 +24,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: remotes/origin/dev
+          ref: dev
       - run: git branch -a
       - name: Set hostname for WebSocketLanguageServer
         run: |
