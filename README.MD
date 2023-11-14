@@ -32,10 +32,26 @@ When your changes are added to the master branch, a github action takes care of 
 
 ## Hosting on a different machine
 
-Currently, the language server as well as the website are hosted on the same server. To change that, you need to follow these steps:
+To change the machine on which the playground is hosted, you need to take the following steps:
 
 - set up your new host instance
-  - - install and configure docker (must run without sudo) (version 20.10.24 has a bug, so make sure to install a newer version)
+  - install and configure docker (must run without sudo) (version 20.10.24 has a bug, so make sure to install a newer version)
   - create ssh key
 - change the `SSH_PRIVATE_KEY` github secret to the new private key
 - change the variables for hostname, username, email and working directory on the server at the beginning of the workflow files under `.github/workflows`
+
+# Hosting your own uvl playground
+
+- To host your own uvl playground setup a machine with docker
+- Clone the repository
+- Adapt `./WebSocketClient/src/config.ts`
+- Set evn variables for example with a `.env` file with:
+  - `HOSTNAME=<your hostname>
+  - `EMAIL=<your email>
+    (the email is used for letsencrypt)
+- run `docker compose up --build -d`
+- This will run the uvl playground behind a reverse proxy with letsencrypt certificates
+
+# Hosting your own uvl playground without reverse proxy
+
+- Remove everything treafik related from the docker compose file
