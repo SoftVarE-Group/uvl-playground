@@ -9,6 +9,7 @@ services:
     ports:
       - "30000:30000"
       - "3000:3000"
+      - "3001:3001"
 
   web-server:
     build:
