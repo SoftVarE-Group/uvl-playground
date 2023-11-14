@@ -1,6 +1,8 @@
 # UVL Playground
 
-[![Website https://590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org/](https://img.shields.io/website-up-down-green-red/https/perso.crans.org.svg)](https://590c9306-8ced-48f6-85f2-bb8caa1bfd52.ul.bw-cloud-instance.org/)
+[![Production Website https://55568392-f169-4f7f-b552-57cf451a2d81.ul.bw-cloud-instance.org/](https://img.shields.io/website-up-down-green-red/https/perso.crans.org.svg)](https://55568392-f169-4f7f-b552-57cf451a2d81.ul.bw-cloud-instance.org/)
+
+[![Development Website https://7470a63e-7b47-4833-a06c-1513f4fc534d.ul.bw-cloud-instance.org/](https://img.shields.io/website-up-down-green-red/https/perso.crans.org.svg)](https://7470a63e-7b47-4833-a06c-1513f4fc534d.ul.bw-cloud-instance.org/)
 
 This project contains the code for the UVL playground, a small website that uses the [UVLS](https://github.com/Universal-Variability-Language/uvl-lsp) to provide syntax highlighting, autocompletion and simple analysis. It consists of static website utilizing the [monaco editor](https://github.com/microsoft/monaco-editor) und communicates via websockets with the language server by using the [monaco-languageclient package](https://github.com/TypeFox/monaco-languageclient).
 
