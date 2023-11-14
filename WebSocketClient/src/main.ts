@@ -19,6 +19,8 @@ import { WebSocketMessageReader, WebSocketMessageWriter, toSocket } from 'vscode
 import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredMemoryFile } from 'vscode/service-override/files';
 import {LogLevel, Uri} from 'vscode';
 import config from './config.js';
+import { instance } from "@viz-js/viz";
+import { Message } from 'vscode-jsonrpc';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
@@ -76,6 +78,30 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             },
             synchronize: {
                 fileEvents: [vscode.workspace.createFileSystemWatcher('**')]
+            },
+            connectionOptions: {
+                messageStrategy: {
+                    handleMessage(message: Message, next: (message: Message) => void) {
+                        if(Message.isRequest(message)){
+                            console.log("Sending Request");
+                        }
+                        if(Message.isResponse(message)){
+                            console.log("Receiving Response");
+                            let result = message.result;
+                            if(typeof result === "string" || result instanceof String){
+                                if(result.startsWith("digraph")){
+                                    createDiagramFromDot(result as string);
+                                }
+                            }
+                        }
+                        if(Message.isNotification(message)){
+                            console.log("Notification Message");
+                        }
+
+                        console.log(message);
+                        next(message);
+                    }
+                }
             }
         },
         // create a language client connection from the JSON RPC connection on demand
@@ -87,6 +113,18 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
     });
 };
 
+function createDiagramFromDot(res: string): void {
+    instance().then(viz => {
+        const div = document.getElementsByClassName("graph");
+        div[0].replaceChildren(viz.renderSVGElement(res!));
+    });
+}
+
+function generateDiagram(): void {
+    vscode.commands.executeCommand("uvls/generate_diagram", 'file:///workspace/fm.uvl')
+        .then((res) => createDiagramFromDot(res as string));
+}
+
 export const startPythonClient = async () => {
     // init vscode-api
     const useDebugLogging = config.debug ? LogLevel.Debug : LogLevel.Off;
@@ -95,7 +133,7 @@ export const startPythonClient = async () => {
             ...getThemeServiceOverride(),
             ...getTextmateServiceOverride(),
             ...getConfigurationServiceOverride(Uri.file('/workspace')),
-            ...getKeybindingsServiceOverride()
+            ...getKeybindingsServiceOverride(),
         },
         debugLogging: config.debug,
         logLevel: useDebugLogging,
@@ -126,6 +164,14 @@ export const startPythonClient = async () => {
     };
     registerExtension(extension, ExtensionHostKind.LocalProcess);
 
+    const button = document.getElementById("rerender");
+    if(button){
+        button.onclick = () => generateDiagram();
+    }
+    else{
+        console.log("I cannot find the button")
+    }
+
     updateUserConfiguration(`{
         "editor.fontSize": 14,
         "workbench.colorTheme": "Default Dark Modern",
@@ -133,7 +179,7 @@ export const startPythonClient = async () => {
     }`);
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
-    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/fm.uvl'), 'features\n\tfeature1\n\nconstraints\n\tfeature1'));
+    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/fm.uvl'), 'features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1'));
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
