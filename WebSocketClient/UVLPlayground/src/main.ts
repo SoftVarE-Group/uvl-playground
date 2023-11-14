@@ -61,7 +61,7 @@ const createWebSocket = (url: string): WebSocket => {
 
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
     return new MonacoLanguageClient({
-        name: 'UVL Language Client',
+        name: 'Visual Studio Code', // 'UVL Language Client',
         clientOptions: {
             // use a language id as a document selector
             documentSelector: [languageId],
