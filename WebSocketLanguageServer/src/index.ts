@@ -29,20 +29,16 @@ const initUVLS = () => {
     }
 
     serverConnection.reader.listen((data: Message) => {
-        console.log("Receiving message");
         const typedData = data as MessageWithId;
-        const entry = superMapperMap.get(Number(typedData.id!));
-        console.log("entry", entry, typedData.id);
-        console.log(superMapperMap);
-        if (entry) {
-            if (entry[1]) {
-                typedData.id = entry[1];
+        if(typedData.id != undefined){
+            const entry = superMapperMap.get(Number(typedData.id!));
+            if (entry != undefined) {
+                if (entry[1] != undefined) {
+                    typedData.id = entry[1];
+                }
+                const socketConnection: IConnection = connectionMap.get(entry[0].toString())!;
+                socketConnection.writer.write(typedData).then(() => console.log("Written to SocketConn")).catch((reason) => console.log("Failed for reason: ", reason));
             }
-            const socketConnection: IConnection = connectionMap.get(entry[0].toString())!;
-            console.log(`Response received for client ${entry[0]}`);
-            logObjectRecursively(typedData);
-            socketConnectionGlobal.writer.write(data).then(() => console.log("Written to SocketConn")).catch((reason) => console.log("Failed for reason: ", reason));
-
         }
     })
 };
@@ -56,7 +52,6 @@ function multiplexHandler(socket: IWebSocket) {
 
 
     socketConnection.reader.listen((message) => {
-        console.log(`Got data: ${message}`);
         if (Message.isRequest(message)) {
             const method = (message as RequestMessage).method;
         }
@@ -65,16 +60,15 @@ function multiplexHandler(socket: IWebSocket) {
         // Retrieve ClientID
         console.log(jsonrpc.id);
         let sendingNumber = Number(jsonrpc.id!);
-        logObjectRecursively(jsonrpc);
+        console.log("sn: " + sendingNumber + " - jid: " + jsonrpc.id);
         // Update LastUsedID
-        if (sendingNumber !== undefined ) {
+        if (jsonrpc.id !== undefined ) {
             lastUsedID = lastUsedID + 1;
             jsonrpc.id = lastUsedID;
+            
+            superMapperMap.set(lastUsedID, [Number(socketNumber), sendingNumber]);
         }
-
-        superMapperMap.set(lastUsedID, [Number(socketNumber), sendingNumber]);
-        console.log("Sending: ", jsonrpc);
-        serverConnection.writer.write(message).then(() => console.log("Written to serverCon")).catch((reason) => console.log("Failed for reason: ", reason));
+        serverConnection.writer.write(jsonrpc).then(() => console.log("Written to serverCon")).catch((reason) => console.log("Failed for reason: ", reason));
     })
 }
 
@@ -109,7 +103,6 @@ export const runUVLServer = () => {
         wss.handleUpgrade(request, socket, head, webSocket => {
             const socket: IWebSocket = {
                 send: content => {
-                    console.log("Sending:", content);
                     webSocket.send(content, error => {
                         if (error) {
                             throw error;
@@ -117,7 +110,6 @@ export const runUVLServer = () => {
                     })
                 },
                 onMessage: cb => webSocket.on('message', (data) => {
-                    console.log("onMessage(): ", data);
                     cb(data);
                 }),
                 onError: cb => webSocket.on('error', cb),
