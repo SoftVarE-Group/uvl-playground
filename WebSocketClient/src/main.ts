@@ -21,9 +21,9 @@ import {LogLevel, Uri} from 'vscode';
 import config from './config.js';
 import { instance } from "@viz-js/viz";
 import { Message } from 'vscode-jsonrpc';
+import { v4 as uuidv4 } from 'uuid';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
-import {randomUUID} from "crypto";
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
@@ -197,7 +197,7 @@ export const startPythonClient = async () => {
     }`);
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
-    fileID = randomUUID();
+    fileID = uuidv4();
     fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file(`/workspace/${fileID}.uvl`), 'features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1'));
     registerFileSystemOverlay(1, fileSystemProvider);
 

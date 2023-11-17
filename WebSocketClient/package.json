@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.8.7",
+    "@types/uuid": "^9.0.7",
     "@types/vscode": "~1.83.0",
     "typescript": "^5.0.2",
     "vite": "^4.5.0",
@@ -30,6 +31,7 @@
     "monaco-editor": "^0.44.0",
     "monaco-editor-workers": "~0.44.0",
     "monaco-languageclient": "^6.6.0",
+    "uuid": "^9.0.1",
     "vite": "~4.4.11",
     "vscode-json-languageservice": "~5.3.7",
     "vscode-uri": "~3.0.8",
