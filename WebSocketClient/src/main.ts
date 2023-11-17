@@ -84,6 +84,22 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                     handleMessage(message: Message, next: (message: Message) => void) {
                         if(Message.isRequest(message)){
                             console.log("Sending Request");
+                            const m: any = message;
+                            if(m.method === 'workspace/executeCommand' && m.params.command === 'uvls.open_web'){
+                                const configUri: string = m.params.arguments[0].uri;
+                                const url = new URL(configUri);
+                                let protocoll = 'http';
+                                if (window.location.protocol === "https:") {
+                                    protocoll = 'https';
+                                 }
+                                 console.log(window.location.protocol);
+                                const newUrl: string = `${protocoll}://${config.languageServerHostName}${url.pathname}?port=${url.port}`;
+                                console.log(newUrl);
+                                const iframeContainer: any = document.getElementById('iframeContainer');
+                                const myIframe: any = document.getElementById('myIframe');
+                                    iframeContainer.style.display = 'block';
+                                    myIframe.src = newUrl;
+                            }
                         }
                         if(Message.isResponse(message)){
                             console.log("Receiving Response");
