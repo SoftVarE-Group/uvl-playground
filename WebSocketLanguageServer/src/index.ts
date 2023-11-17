@@ -30,6 +30,26 @@ const initUVLS = () => {
 
     serverConnection.reader.listen((data: Message) => {
         const typedData = data as MessageWithId;
+        if(Message.isNotification(typedData)){
+            for (const key in typedData.params){
+                if(key === "uri"){
+                    let uri = typedData.params[key];
+                    const connection = protocolVandalismMap.get(uri);
+                    if(connection){
+                        connection.writer.write(typedData).then(() => console.log("Written to SocketConn")).catch((reason) => console.log("Failed for reason: ", reason));
+                        return;
+                    }
+                    console.log("ALAAAARM, VANDALISM VADILISMED");
+                }
+            }
+        }
+        if(Message.isResponse(data)){
+            for (const key in (data.result as unknown as any[])){
+                if(key === "serverInfo"){
+                    initMessage = data;
+                }
+            }
+        }
         if(typedData.id != undefined){
             const entry = superMapperMap.get(Number(typedData.id!));
             if (entry != undefined) {
@@ -38,6 +58,7 @@ const initUVLS = () => {
                 }
                 const socketConnection: IConnection = connectionMap.get(entry[0].toString())!;
                 socketConnection.writer.write(typedData).then(() => console.log("Written to SocketConn")).catch((reason) => console.log("Failed for reason: ", reason));
+                return;
             }
         }
     })
@@ -52,8 +73,25 @@ function multiplexHandler(socket: IWebSocket) {
 
 
     socketConnection.reader.listen((message) => {
-        if (Message.isRequest(message)) {
+        if (Message.isRequest(message) || Message.isNotification(message)) {
             const method = (message as RequestMessage).method;
+            console.log("MEthod:", method);
+            console.log(method === "textDocument/didOpen");
+            for (const key in message.params){
+                if(key === "textDocument"){
+                    for (const docKey in message.params[key]) {
+                        if (docKey === "uri") {
+                            let uri = message.params[key][docKey];
+                            console.log("Found URI:", uri);
+                            protocolVandalismMap.set(uri, socketConnection);
+                        }
+                    }
+                }
+            }
+            if(method === "initialize" && initMessage){
+                socketConnection.writer.write(initMessage).then(() => console.log("Written to serverCon")).catch((reason) => console.log("Failed for reason: ", reason));
+                return;
+            }
         }
         const socketNumber = connectionMap.getKey(socketConnection)!;
         const jsonrpc: MessageWithId = message as MessageWithId;
@@ -74,8 +112,10 @@ function multiplexHandler(socket: IWebSocket) {
 
 const superMapperMap = new Map<number, [number, number]>();
 const connectionMap = new BiMap<IConnection>();
+const protocolVandalismMap = new Map<string, IConnection>();
 let serverConnection: IConnection;
 let socketConnectionGlobal: IConnection;
+let initMessage: Message;
 let lastUsedID = -1;
 
 export const runUVLServer = () => {
