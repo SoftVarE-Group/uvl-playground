@@ -95,7 +95,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                                     protocoll = 'https';
                                  }
                                  console.log(window.location.protocol);
-                                const newUrl: string = `${protocoll}://${config.languageServerHostName}${url.pathname}?port=${url.port}`;
+                                const newUrl: string = `${protocoll}://${config.languageServerHostName}:${url.port}${url.pathname}`;
                                 console.log(newUrl);
                                 const iframeContainer: any = document.getElementById('iframeContainer');
                                 const myIframe: any = document.getElementById('myIframe');

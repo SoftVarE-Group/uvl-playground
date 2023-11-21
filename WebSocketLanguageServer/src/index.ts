@@ -8,15 +8,61 @@ import {URL} from 'url';
 import {Socket} from 'net';
 import express from 'express';
 import {IWebSocket, WebSocketMessageReader, WebSocketMessageWriter} from 'vscode-ws-jsonrpc';
-import {createServerProcess, IConnection, createConnection, forward} from 'vscode-ws-jsonrpc/server';
-import {
-    Message, RequestMessage
-} from 'vscode-languageserver';
-import BiMap from "bidirectional-map";
+import {createConnection, createServerProcess, IConnection} from 'vscode-ws-jsonrpc/server';
+import {Message, NotificationMessage, RequestMessage, ResponseMessage} from 'vscode-languageserver';
 import config from './config.js';
 
+let serverConnection: IConnection;
+/* the protocol uses messages without an ID, but they need to be delivered to a specific client
+This is a hack around: we map uris (that are unique to client) to a connection and deliver messages
+without id but with a uri to the correct client
+ */
+const uriToConnectionMap = new Map<string, IConnection>();
+const clientScopeToServerScope = new Map<Number, Number>();
+const serverScopeToClientScope = new Map<Number, Number>();
+const connectionToClientId = new Map<IConnection, Number>();
+const clientIdToConnection = new Map<Number, IConnection>();
+const serverScopeIdToClientId = new Map<Number, Number>();
+const clientIdAndClientScopeIdToServerScopeId = new Map<[Number, Number], Number>;
+let nextFreeClientId = 0;
+let nextFreeServerScopeId = 0;
+let initMessage1: Message | undefined;
+let initMessage2: Message | undefined;
+let initialized = false;
 
-type MessageWithId = Message & { id: number | string | undefined};
+function getClientScopeIdFromServerScopeId(serverScopeId: Number): Number | undefined {
+    const clientScopeId = serverScopeToClientScope.get(serverScopeId);
+    return clientScopeId;
+}
+
+function getServerScopeIdFromClientScopeId(clientScopeId: Number, clientId: Number): Number {
+    let serverScopeId = clientIdAndClientScopeIdToServerScopeId.get([clientId, clientScopeId]);
+    if (serverScopeId === undefined) {
+        clientScopeToServerScope.set(clientScopeId, nextFreeServerScopeId);
+        serverScopeToClientScope.set(nextFreeServerScopeId, clientScopeId);
+        serverScopeId = nextFreeServerScopeId;
+        nextFreeServerScopeId++;
+        serverScopeIdToClientId.set(serverScopeId, clientId);
+        clientIdAndClientScopeIdToServerScopeId.set([clientId, clientScopeId], serverScopeId);
+    }
+    return serverScopeId;
+}
+
+function getConnectionFromServerScopeId(serverScopeId: Number): IConnection | undefined {
+    const clientId = serverScopeIdToClientId.get(serverScopeId);
+    let connection;
+    if (clientId !== undefined) {
+        connection = clientIdToConnection.get(clientId);
+    }
+    return connection;
+}
+
+function addNewConnection(connection: IConnection) {
+    const clientId = nextFreeClientId;
+    clientIdToConnection.set(clientId, connection);
+    nextFreeClientId++;
+    return clientId;
+}
 
 const initUVLS = () => {
     const serverName: string = 'UVLS';
@@ -24,42 +70,56 @@ const initUVLS = () => {
     serverConnection = createServerProcess(serverName, ls)!;
 
     if (!serverConnection) {
-        console.log("Fuuuuuuuuuu");
-        process.exit(42);
+        console.error("Server could not be started");
+        process.exit(1);
     }
 
-    serverConnection.reader.listen((data: Message) => {
-        const typedData = data as MessageWithId;
-        if(Message.isNotification(typedData)){
-            for (const key in typedData.params){
-                if(key === "uri"){
-                    let uri = typedData.params[key];
-                    const connection = protocolVandalismMap.get(uri);
-                    if(connection){
-                        connection.writer.write(typedData).then(() => console.log("Written to SocketConn")).catch((reason) => console.log("Failed for reason: ", reason));
-                        return;
-                    }
-                    console.log("ALAAAARM, VANDALISM VADILISMED");
-                }
+    serverConnection.reader.listen((message: Message) => {
+        let socketConnection: IConnection | undefined;
+        let newMessage: Message = message;
+        if (Message.isRequest(message)) {
+            const typedMessage = message as RequestMessage;
+            const serverScopeId = Number(typedMessage.id);
+            const clientConnection = getConnectionFromServerScopeId(serverScopeId);
+            const clientScopeId = getClientScopeIdFromServerScopeId(serverScopeId);
+            if (clientScopeId !== undefined) {
+                newMessage["id"] = clientScopeId;
+            }
+            if (clientConnection !== undefined) {
+                socketConnection = clientConnection;
+            }
+            if (typedMessage.method === "client/registerCapability") {
+                initMessage2 = newMessage;
+            } else if (typedMessage.method === "workspace/executeCommand") {
+                console.log(typedMessage);
+            }
+
+        } else if (Message.isResponse(message)) {
+            const typedMessage = message as ResponseMessage;
+            if (typedMessage.id === 0) {
+                initMessage1 = message;
+            }
+            const serverScopeId = Number(typedMessage.id);
+            const clientConnection = getConnectionFromServerScopeId(serverScopeId);
+            const clientScopeId = getClientScopeIdFromServerScopeId(serverScopeId);
+            if (clientScopeId !== undefined) {
+                newMessage["id"] = clientScopeId;
+            }
+            if (clientConnection !== undefined) {
+                socketConnection = clientConnection;
+            }
+        } else if (Message.isNotification(message)) {
+            const typedMessage = message as NotificationMessage;
+            const uri: string | undefined = typedMessage.params?.["uri"];
+            if (uri !== undefined) {
+                socketConnection = uriToConnectionMap.get(uri);
             }
         }
-        if(Message.isResponse(data)){
-            for (const key in (data.result as unknown as any[])){
-                if(key === "serverInfo"){
-                    initMessage = data;
-                }
-            }
-        }
-        if(typedData.id != undefined){
-            const entry = superMapperMap.get(Number(typedData.id!));
-            if (entry != undefined) {
-                if (entry[1] != undefined) {
-                    typedData.id = entry[1];
-                }
-                const socketConnection: IConnection = connectionMap.get(entry[0].toString())!;
-                socketConnection.writer.write(typedData).then(() => console.log("Written to SocketConn")).catch((reason) => console.log("Failed for reason: ", reason));
-                return;
-            }
+        if (socketConnection) {
+            console.log(newMessage);
+            socketConnection.writer.write(newMessage);
+        } else {
+            console.log(`Could not resolve destination of server message to right client\nMessage: ${JSON.stringify(message)}`)
         }
     })
 };
@@ -68,55 +128,56 @@ function multiplexHandler(socket: IWebSocket) {
     const reader = new WebSocketMessageReader(socket);
     const writer = new WebSocketMessageWriter(socket);
     const socketConnection = createConnection(reader, writer, () => socket.dispose());
-    connectionMap.set(connectionMap.size.toString(), socketConnection);
-    socketConnectionGlobal = socketConnection;
+    const clientId = addNewConnection(socketConnection);
 
 
     socketConnection.reader.listen((message) => {
-        if (Message.isRequest(message) || Message.isNotification(message)) {
-            const method = (message as RequestMessage).method;
-            console.log("MEthod:", method);
-            console.log(method === "textDocument/didOpen");
-            for (const key in message.params){
-                if(key === "textDocument"){
-                    for (const docKey in message.params[key]) {
-                        if (docKey === "uri") {
-                            let uri = message.params[key][docKey];
-                            console.log("Found URI:", uri);
-                            protocolVandalismMap.set(uri, socketConnection);
-                        }
-                    }
-                }
-            }
-            if(method === "initialize" && initMessage){
-                socketConnection.writer.write(initMessage).then(() => console.log("Written to serverCon")).catch((reason) => console.log("Failed for reason: ", reason));
+        let newMessage = message;
+        if (Message.isRequest(message)) {
+            const typedMessage = message as RequestMessage;
+            if (typedMessage.method === "initialize" && initMessage1 !== undefined) {
+                socketConnection.writer.write(initMessage1);
                 return;
+            } else if (typedMessage.method === "workspace/executeCommand") {
+                console.log(typedMessage);
+                const serverScopeId = getServerScopeIdFromClientScopeId(Number(typedMessage.id), clientId);
+                newMessage["id"] = serverScopeId;
+            } else {
+                const serverScopeId = getServerScopeIdFromClientScopeId(Number(typedMessage.id), clientId);
+                newMessage["id"] = serverScopeId;
             }
+
+        } else if (Message.isResponse(message)) {
+            const typedMessage = message as ResponseMessage;
+            const serverScopeId = getServerScopeIdFromClientScopeId(Number(typedMessage.id), clientId);
+            newMessage["id"] = serverScopeId;
+
+        } else if (Message.isNotification(message)) {
+            const typedMessage = message as NotificationMessage;
+            if (typedMessage.method === "initialized" && !initialized) {
+                initialized = true;
+                serverConnection.writer.write(newMessage);
+                return;
+            } else if (typedMessage.method === "textDocument/didOpen") {
+                const uri: string | undefined = typedMessage.params?.["textDocument"]?.["uri"];
+                if (uri !== undefined) {
+                    uriToConnectionMap.set(uri, socketConnection);
+                }
+
+            } else if (typedMessage.method === "$/cancelRequest") {
+                console.log(JSON.stringify(newMessage));
+                newMessage["params"]["id"] = getServerScopeIdFromClientScopeId(newMessage["params"]["id"], clientId);
+            } else if (typedMessage.method === "initialized" && initMessage2 !== undefined) {
+                socketConnection.writer.write(initMessage2);
+                return;
+            } else {
+                console.log(JSON.stringify(newMessage));
+            }
+
         }
-        const socketNumber = connectionMap.getKey(socketConnection)!;
-        const jsonrpc: MessageWithId = message as MessageWithId;
-        // Retrieve ClientID
-        console.log(jsonrpc.id);
-        let sendingNumber = Number(jsonrpc.id!);
-        console.log("sn: " + sendingNumber + " - jid: " + jsonrpc.id);
-        // Update LastUsedID
-        if (jsonrpc.id !== undefined ) {
-            lastUsedID = lastUsedID + 1;
-            jsonrpc.id = lastUsedID;
-            
-            superMapperMap.set(lastUsedID, [Number(socketNumber), sendingNumber]);
-        }
-        serverConnection.writer.write(jsonrpc).then(() => console.log("Written to serverCon")).catch((reason) => console.log("Failed for reason: ", reason));
+        serverConnection.writer.write(newMessage);
     })
 }
-
-const superMapperMap = new Map<number, [number, number]>();
-const connectionMap = new BiMap<IConnection>();
-const protocolVandalismMap = new Map<string, IConnection>();
-let serverConnection: IConnection;
-let socketConnectionGlobal: IConnection;
-let initMessage: Message;
-let lastUsedID = -1;
 
 export const runUVLServer = () => {
     process.on('uncaughtException', function (err: any) {
@@ -181,6 +242,5 @@ function logObjectRecursively(obj, depth = 0) {
         }
     }
 }
-
 
 runUVLServer();
