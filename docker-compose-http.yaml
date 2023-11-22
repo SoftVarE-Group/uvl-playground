@@ -17,3 +17,4 @@ services:
     restart: on-failure
     ports:
       - "30000:30000"
+      - "3000:3000"

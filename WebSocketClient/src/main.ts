@@ -23,6 +23,7 @@ import { instance } from "@viz-js/viz";
 import { Message } from 'vscode-jsonrpc';
 import { v4 as uuidv4 } from 'uuid';
 import lodash from 'lodash';
+import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
@@ -78,8 +79,21 @@ const createWebSocket = (url: string): WebSocket => {
     return webSocket;
 };
 
+function displayConfigureView(configUri: string) {
+    const url = new URL(configUri);
+    let protocoll = 'http';
+    if (window.location.protocol === "https:") {
+        protocoll = 'https';
+    }
+    const newUrl: string = `${protocoll}://${config.languageServerHostName}:${url.port}${url.pathname}`;
+    const iframeContainer: any = document.getElementById('iframeContainer');
+    const myIframe: any = document.getElementById('myIframe');
+    iframeContainer.style.display = 'block';
+    myIframe.src = newUrl;
+}
+
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
-    return new MonacoLanguageClient({
+    const client = new MonacoLanguageClient({
         name: 'UVL Language Client',
         clientOptions: {
             // use a language id as a document selector
@@ -104,17 +118,8 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                         if(Message.isRequest(message)){
                             const m: any = message;
                             if(m.method === 'workspace/executeCommand' && m.params.command === 'uvls.open_web'){
-                                const configUri: string = m.params.arguments[0].uri;
-                                const url = new URL(configUri);
-                                let protocoll = 'http';
-                                if (window.location.protocol === "https:") {
-                                    protocoll = 'https';
-                                 }
-                                const newUrl: string = `${protocoll}://${config.languageServerHostName}:${url.port}${url.pathname}`;
-                                const iframeContainer: any = document.getElementById('iframeContainer');
-                                const myIframe: any = document.getElementById('myIframe');
-                                    iframeContainer.style.display = 'block';
-                                    myIframe.src = newUrl;
+                                // const configUri: string = m.params.arguments[0].uri;
+                                // displayConfigureView(configUri);
                             }
                         }
                         if(Message.isResponse(message)){
@@ -131,6 +136,16 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                         next(message);
                     }
                 }
+            },
+            middleware: {
+                executeCommand(command, args) {
+                    const information = {command: command, arguments: args};
+                    client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                        console.log(res);
+                        console.log("Reverse-Engineering Profi");
+                        displayConfigureView(res.uri);
+                    });
+                },
             }
         },
         // create a language client connection from the JSON RPC connection on demand
@@ -140,6 +155,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             }
         }
     });
+    return client;
 };
 
 function createDiagramFromDot(res: string): void {
@@ -217,8 +233,8 @@ export const startPythonClient = async () => {
     modelRef.object.onDidChangeContent(() => {
        debouncedSave();
     });
-    
-    
+
+
     modelRef.object.setLanguageId(languageId);
 
     // create monaco editor
