@@ -91,7 +91,10 @@ const initUVLS = () => {
             if (typedMessage.method === "client/registerCapability") {
                 initMessage2 = newMessage;
             } else if (typedMessage.method === "workspace/executeCommand") {
-                console.log(typedMessage);
+                const fileUri = typedMessage.params?.["arguments"][0]?.["uri"].split("create/").pop();
+                if(fileUri !== undefined){
+                    socketConnection = uriToConnectionMap.get(fileUri);
+                }
             }
 
         } else if (Message.isResponse(message)) {
@@ -111,12 +114,12 @@ const initUVLS = () => {
         } else if (Message.isNotification(message)) {
             const typedMessage = message as NotificationMessage;
             const uri: string | undefined = typedMessage.params?.["uri"];
-            if (uri !== undefined) {
-                socketConnection = uriToConnectionMap.get(uri);
+            if (uri !== undefined && uri.split("///").length === 2) {
+                socketConnection = uriToConnectionMap.get(uri.split("///")[1]);
+
             }
         }
         if (socketConnection) {
-            console.log(newMessage);
             socketConnection.writer.write(newMessage);
         } else {
             console.log(`Could not resolve destination of server message to right client\nMessage: ${JSON.stringify(message)}`)
@@ -139,7 +142,6 @@ function multiplexHandler(socket: IWebSocket) {
                 socketConnection.writer.write(initMessage1);
                 return;
             } else if (typedMessage.method === "workspace/executeCommand") {
-                console.log(typedMessage);
                 const serverScopeId = getServerScopeIdFromClientScopeId(Number(typedMessage.id), clientId);
                 newMessage["id"] = serverScopeId;
             } else {
@@ -160,18 +162,17 @@ function multiplexHandler(socket: IWebSocket) {
                 return;
             } else if (typedMessage.method === "textDocument/didOpen") {
                 const uri: string | undefined = typedMessage.params?.["textDocument"]?.["uri"];
-                if (uri !== undefined) {
-                    uriToConnectionMap.set(uri, socketConnection);
+                if (uri !== undefined && uri.split("///").length === 2) {
+                    uriToConnectionMap.set(uri.split("///")[1], socketConnection);
                 }
 
             } else if (typedMessage.method === "$/cancelRequest") {
-                console.log(JSON.stringify(newMessage));
                 newMessage["params"]["id"] = getServerScopeIdFromClientScopeId(newMessage["params"]["id"], clientId);
             } else if (typedMessage.method === "initialized" && initMessage2 !== undefined) {
                 socketConnection.writer.write(initMessage2);
                 return;
             } else {
-                console.log(JSON.stringify(newMessage));
+                // other messages are just forwarded to the uvls
             }
 
         }

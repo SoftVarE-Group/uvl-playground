@@ -22,6 +22,7 @@ import config from './config.js';
 import { instance } from "@viz-js/viz";
 import { Message } from 'vscode-jsonrpc';
 import { v4 as uuidv4 } from 'uuid';
+import lodash from 'lodash';
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
@@ -29,6 +30,7 @@ buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new U
 const languageId = 'uvls';
 let languageClient: MonacoLanguageClient;
 let fileID;
+let model;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -138,11 +140,6 @@ function createDiagramFromDot(res: string): void {
     });
 }
 
-function generateDiagram(): void {
-    vscode.commands.executeCommand("uvls/generate_diagram", `file:///workspace/${fileID}.uvl`)
-        .then((res) => createDiagramFromDot(res as string));
-}
-
 export const startPythonClient = async () => {
     // init vscode-api
     const useDebugLogging = config.debug ? LogLevel.Debug : LogLevel.Off;
@@ -182,14 +179,6 @@ export const startPythonClient = async () => {
     };
     registerExtension(extension, ExtensionHostKind.LocalProcess);
 
-    const button = document.getElementById("rerender");
-    if(button){
-        button.onclick = () => generateDiagram();
-    }
-    else{
-        console.log("I cannot find the button")
-    }
-
     updateUserConfiguration(`{
         "editor.fontSize": 14,
         "workbench.colorTheme": "Default Dark Modern",
@@ -198,7 +187,7 @@ export const startPythonClient = async () => {
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
     fileID = uuidv4();
-    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file(`/workspace/${fileID}.uvl`), 'features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1'));
+    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file(`/workspace/${fileID}.uvl`), getInitialFm()));
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
@@ -212,6 +201,14 @@ export const startPythonClient = async () => {
 
     // use the file create before
     const modelRef = await createModelReference(monaco.Uri.file(`/workspace/${fileID}.uvl`));
+    model = modelRef.object;
+
+    const debouncedSave = lodash.debounce(saveFm, 1000);
+    modelRef.object.onDidChangeContent(() => {
+       debouncedSave();
+    });
+    
+    
     modelRef.object.setLanguageId(languageId);
 
     // create monaco editor
@@ -220,3 +217,19 @@ export const startPythonClient = async () => {
         automaticLayout: true
     });
 };
+
+function getInitialFm(){
+    let initialFm = "features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1";
+    const storedFm = window.localStorage.getItem("fm");
+    if(storedFm !== null){
+        initialFm = storedFm;
+    }
+    return initialFm;
+}
+
+function saveFm(){
+    if(model !== undefined){
+        const content = model.textEditorModel?.getValue();
+        window.localStorage.setItem("fm", content);
+    }
+}
