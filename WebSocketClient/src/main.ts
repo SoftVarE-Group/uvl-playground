@@ -50,7 +50,7 @@ const createUrl = (hostname: string, port: number, path: string, searchParams: R
 
 const createWebSocket = (url: string): WebSocket => {
     const webSocket = new WebSocket(url);
-    webSocket.onerror = (x) => {
+    webSocket.onerror = () => {
         if(connectionText){
             connectionText.textContent = "Could not connect to language server. Reconnecting ...";
         }
