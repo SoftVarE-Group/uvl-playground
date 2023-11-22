@@ -31,6 +31,7 @@ const languageId = 'uvls';
 let languageClient: MonacoLanguageClient;
 let fileID;
 let model;
+const connectionText = document.getElementById("connection");
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -49,7 +50,18 @@ const createUrl = (hostname: string, port: number, path: string, searchParams: R
 
 const createWebSocket = (url: string): WebSocket => {
     const webSocket = new WebSocket(url);
+    webSocket.onerror = (x) => {
+        if(connectionText){
+            connectionText.textContent = "Could not connect to language server. Reconnecting ...";
+        }
+        setTimeout(() => {
+            createWebSocket(url);
+        }, 1000);
+    };
     webSocket.onopen = async () => {
+        if(connectionText){
+            connectionText.textContent = "";
+        }
         const socket = toSocket(webSocket);
         const reader = new WebSocketMessageReader(socket);
         const writer = new WebSocketMessageWriter(socket);
@@ -58,7 +70,10 @@ const createWebSocket = (url: string): WebSocket => {
             writer
         });
         await languageClient.start();
-        reader.onClose(() => languageClient.stop());
+        reader.onClose(() => {
+            languageClient.stop();
+            createWebSocket(url);
+        });
     };
     return webSocket;
 };
@@ -87,7 +102,6 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                 messageStrategy: {
                     handleMessage(message: Message, next: (message: Message) => void) {
                         if(Message.isRequest(message)){
-                            console.log("Sending Request");
                             const m: any = message;
                             if(m.method === 'workspace/executeCommand' && m.params.command === 'uvls.open_web'){
                                 const configUri: string = m.params.arguments[0].uri;
@@ -96,9 +110,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                                 if (window.location.protocol === "https:") {
                                     protocoll = 'https';
                                  }
-                                 console.log(window.location.protocol);
                                 const newUrl: string = `${protocoll}://${config.languageServerHostName}:${url.port}${url.pathname}`;
-                                console.log(newUrl);
                                 const iframeContainer: any = document.getElementById('iframeContainer');
                                 const myIframe: any = document.getElementById('myIframe');
                                     iframeContainer.style.display = 'block';
@@ -106,7 +118,6 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                             }
                         }
                         if(Message.isResponse(message)){
-                            console.log("Receiving Response");
                             let result = message.result;
                             if(typeof result === "string" || result instanceof String){
                                 if(result.startsWith("digraph")){
@@ -115,10 +126,8 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                             }
                         }
                         if(Message.isNotification(message)){
-                            console.log("Notification Message");
                         }
 
-                        console.log(message);
                         next(message);
                     }
                 }
@@ -197,6 +206,7 @@ export const startPythonClient = async () => {
         // By commenting above line out and commenting below line in, connection to language server will be denied.
         // authorization: 'FailedUserAuth'
     }, location.protocol === 'https:'));
+
 
 
     // use the file create before
