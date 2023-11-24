@@ -17,7 +17,7 @@ services:
     command:
       - --api.dashboard=true
       - --api.insecure=true
-      - --log.level=INFO
+      - --log.level=DEBUG
       #- --log.filepath=/var/log/traefik.log
       - --accesslog=true
       #- --accesslog.filepath=/var/log/traefik-access.log
