@@ -38,7 +38,7 @@ services:
       - --certificatesResolvers.myresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
     labels:
       - traefik.enable=true
-      - traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`) && PathPrefix(`/api`, `/dashboard/`)
+      - traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`) && (PathPrefix(`/dashboard/`) || PathPrefix(`/api`))
       - traefik.http.routers.mydashboard.service=api@internal
       - traefik.http.routers.mydashboard.middlewares=myauth
       - traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/
