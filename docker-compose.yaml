@@ -69,7 +69,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.languageserver.rule=Host(`${HOSTNAME}`) && Path(`/`)"
+      - "traefik.http.routers.languageserver.rule=Host(`${HOSTNAME}`) && (Path(`/`) || PathPrefix(`create`))"
       - "traefik.http.services.languageserver.loadbalancer.server.port=30000"
       - "traefik.http.routers.languageserver.entrypoints=ws"
       - "traefik.http.routers.configureview.entrypoints=configure"
