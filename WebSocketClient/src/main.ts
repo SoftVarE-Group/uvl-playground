@@ -136,14 +136,11 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                     const information = {command: command, arguments: args};
                     if(command === "uvls/open_config") {
                         client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
-                            console.log(res);
                             displayConfigureView(res.uri);
                         });
                     }
                     else if(command === "uvls/generate_diagram") {
-                        console.log("Generate a diagram");
                         client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
-                            console.log(res);
                             createDiagramFromDot(res as string);
                         });
                     }
