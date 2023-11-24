@@ -72,8 +72,11 @@ services:
       - "traefik.http.routers.languageserver.rule=Host(`${HOSTNAME}`) && Path(`/`)"
       - "traefik.http.services.languageserver.loadbalancer.server.port=30000"
       - "traefik.http.routers.languageserver.entrypoints=ws"
+      - "traefik.http.routers.configureview.entrypoints=configure"
+      - "treafik.http.routers.configureview.loadbalancer.server.port=3000"
+      - "traefik.http.routers.configureview.tls.certresolver=myresolver"
       - "traefik.http.routers.languageserver.tls.certresolver=myresolver"
-      
+
 networks:
   proxy:
     name: proxy
