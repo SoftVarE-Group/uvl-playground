@@ -81,11 +81,11 @@ const createWebSocket = (url: string): WebSocket => {
 
 function displayConfigureView(configUri: string) {
     const url = new URL(configUri);
-    let protocoll = 'http';
+    let protocol = 'http';
     if (window.location.protocol === "https:") {
-        protocoll = 'https';
+        protocol = 'https';
     }
-    const newUrl: string = `${protocoll}://${config.languageServerHostName}:${url.port}${url.pathname}`;
+    const newUrl: string = `${protocol}://${config.languageServerHostName}:${url.port}${url.pathname}`;
     const iframeContainer: any = document.getElementById('iframeContainer');
     const myIframe: any = document.getElementById('myIframe');
     iframeContainer.style.display = 'block';
@@ -113,38 +113,43 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                 fileEvents: [vscode.workspace.createFileSystemWatcher('**')]
             },
             connectionOptions: {
+                // This construct can be used to filter the messages we are receiving from the language server
                 messageStrategy: {
                     handleMessage(message: Message, next: (message: Message) => void) {
                         if(Message.isRequest(message)){
-                            const m: any = message;
-                            if(m.method === 'workspace/executeCommand' && m.params.command === 'uvls.open_web'){
-                                // const configUri: string = m.params.arguments[0].uri;
-                                // displayConfigureView(configUri);
-                            }
+                            // Filters requests send by uvls -> Anti-Pattern in our opinion
                         }
-                        if(Message.isResponse(message)){
-                            let result = message.result;
-                            if(typeof result === "string" || result instanceof String){
-                                if(result.startsWith("digraph")){
-                                    createDiagramFromDot(result as string);
-                                }
-                            }
+                        else if(Message.isResponse(message)){
+                            // Filters responses send by uvls
                         }
-                        if(Message.isNotification(message)){
+                        else if(Message.isNotification(message)){
+                            // Filters Notification messages following json-rpc spec
                         }
-
+                        // "next" is the default behaviour
                         next(message);
                     }
                 }
             },
+            // The Middleware allows us to intercept all messages that would be sent to the language server
             middleware: {
-                executeCommand(command, args) {
+                executeCommand(command, args, next) {
                     const information = {command: command, arguments: args};
-                    client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
-                        console.log(res);
-                        console.log("Reverse-Engineering Profi");
-                        displayConfigureView(res.uri);
-                    });
+                    if(command === "uvls/open_config") {
+                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                            console.log(res);
+                            displayConfigureView(res.uri);
+                        });
+                    }
+                    else if(command === "uvls/generate_diagram") {
+                        console.log("Generate a diagram");
+                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                            console.log(res);
+                            createDiagramFromDot(res as string);
+                        });
+                    }
+                    else {
+                        next(command, args);
+                    }
                 },
             }
         },
