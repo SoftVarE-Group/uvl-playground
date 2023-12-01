@@ -76,7 +76,7 @@ services:
       - "traefik.http.routers.languageserver.service=languageserver"
 
       - "traefik.http.routers.configureview.entrypoints=configure"
-      - "traefik.http.routers.configureview.rule=Host(`${HOSTNAME}`) && PathPrefix(`/create`)"
+      - "traefik.http.routers.configureview.rule=Host(`${HOSTNAME}`)"
       - "traefik.http.routers.configureview.service=configureview"
       - "traefik.http.services.configureview.loadbalancer.server.port=3000"
       - "traefik.http.routers.configureview.tls.certresolver=myresolver"
