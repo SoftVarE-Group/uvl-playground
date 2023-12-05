@@ -1,13 +1,46 @@
 version: '3.9'
 
 services:
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - 80:80
+      - 30000:30000
+      - 3000:3000
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      #- /var/log:/var/log
+    command:
+      - --api.dashboard=true
+      - --log.level=DEBUG
+      #- --log.filepath=/var/log/traefik.log
+      - --accesslog=true
+      #- --accesslog.filepath=/var/log/traefik-access.log
+      - --providers.docker.network=proxy
+      - --providers.docker.exposedByDefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.ws.address=:30000
+      - --entrypoints.config.address=:3000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mydashboard.rule=Host(`localhost`) && Path(`/dashboard`)
+      - traefik.http.routers.mydashboard.service=api@internal
+
   webserver:
     build:
         context: ./WebSocketClient
         dockerfile: Dockerfile
     restart: on-failure
-    ports:
-      - "80:80"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.webserver.rule=Host(`localhost`)"
+      - "traefik.http.routers.webserver.service=webserver"
+      - "traefik.http.services.webserver.loadbalancer.server.port=80"
+      - "traefik.http.routers.webserver.entrypoints=web"
       
   languageserver:
     build:
@@ -15,5 +48,20 @@ services:
         dockerfile: Dockerfile
     hostname: language-server
     restart: on-failure
-    ports:
-      - "30000:30000"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.languageserver.rule=Host(`localhost`) && Path(`/`)"
+      - "traefik.http.routers.languageserver.service=languageserver"
+      - "traefik.http.services.languageserver.loadbalancer.server.port=30000"
+      - "traefik.http.routers.languageserver.entrypoints=ws"
+
+      - "traefik.http.routers.config.rule=Host(`localhost`) && Path(`/create`)"
+      - "traefik.http.routers.config.service=config"
+      - "traefik.http.services.config.loadbalancer.server.port=3000"
+      - "traefik.http.routers.config.entrypoints=config"
+      
+networks:
+  proxy:
+    name: proxy
