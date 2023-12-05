@@ -34,7 +34,7 @@ let fileID;
 let model;
 const connectionText = document.getElementById("connection");
 let debounceGenGraph;
-const MAX_LINES = 100;
+const MAX_NUMBER_LINES = 100;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -144,12 +144,12 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                                     createDiagramFromDot(res as string);
                                 });
                             }, 500);
-                            
+
                             const firstPane = document.getElementById("first");
                             const secondPane = document.getElementById("second");
                             if(firstPane && secondPane){
                                 firstPane.style.width = "50%";
-                                secondPane.style.width = "50%"; 
+                                secondPane.style.width = "50%";
                             }
 
                         }else{
@@ -162,10 +162,10 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                             const secondPane = document.getElementById("second");
                             if(firstPane && secondPane){
                                 firstPane.style.width = "100%";
-                                secondPane.style.width = "0%"; 
+                                secondPane.style.width = "0%";
                             }
                         }
-                        
+
                     }
                     else {
                         next(command, args);
@@ -180,7 +180,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             }
         }
     });
-    
+
     return client;
 };
 
@@ -254,19 +254,6 @@ export const startPythonClient = async () => {
     // use the file create before
     const modelRef = await createModelReference(monaco.Uri.file(`/workspace/${fileID}.uvl`));
     model = modelRef.object;
-
-    const debouncedSave = lodash.debounce(saveFm, 1000);
-
-    modelRef.object.onDidChangeContent(() => {
-       debouncedSave();
-       if(debounceGenGraph !== undefined){
-        debounceGenGraph();
-       }
-    });
-
-    
-
-
     modelRef.object.setLanguageId(languageId);
 
     // create monaco editor
@@ -275,23 +262,25 @@ export const startPythonClient = async () => {
         automaticLayout: true
     });
 
-    if(editor !== null){
-        editor.onDidChangeModelContent(() => {
-            const numberOfLines = editor.getModel()?.getLineCount();
-            if(numberOfLines && numberOfLines > MAX_LINES){
-                let lines = editor.getModel()?.getLinesContent();
-                lines?.splice(MAX_LINES);
-                const newContent = lines?.reduce((p, c) => {return p + "\n" + c});
-                if(newContent !== undefined){
-                    const position = editor.getPosition();
-                    editor.getModel()?.setValue(newContent);
-                    if(position !== null){
-                        editor.setPosition(position);
-                    }
-                }
+    editor.onDidChangeModelContent(() => {
+        const model = editor.getModel();
+        const lineCount = model?.getLineCount();
+        if(lineCount  && lineCount > MAX_NUMBER_LINES){
+            vscode.commands.executeCommand("undo");
+            if(connectionText){
+                connectionText.textContent = `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`
+                setTimeout(() => {
+                    connectionText.textContent = "";
+                }, 2000);
             }
-        });
-    }
+        }
+        debouncedSave();
+        if(debounceGenGraph !== undefined){
+            debounceGenGraph();
+        }
+    })
+
+    const debouncedSave = lodash.debounce(saveFm, 1000);
 };
 
 function getInitialFm(){
