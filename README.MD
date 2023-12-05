@@ -1,6 +1,6 @@
 # UVL Playground
 
-Production [![Production Website https://55568392-f169-4f7f-b552-57cf451a2d81.ul.bw-cloud-instance.org/](https://img.shields.io/website-up-down-green-red/https/perso.crans.org.svg)](https://55568392-f169-4f7f-b552-57cf451a2d81.ul.bw-cloud-instance.org/)
+Production [![Production Website uvl.uni-ulm.de/](https://img.shields.io/website-up-down-green-red/https/perso.crans.org.svg)](https://uvl.uni-ulm.de/)
 
 Development [![Development Website https://7470a63e-7b47-4833-a06c-1513f4fc534d.ul.bw-cloud-instance.org/](https://img.shields.io/website-up-down-green-red/https/perso.crans.org.svg)](https://7470a63e-7b47-4833-a06c-1513f4fc534d.ul.bw-cloud-instance.org/)
 
