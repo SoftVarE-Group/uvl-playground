@@ -37,8 +37,7 @@ iframe {
 ::backdrop {
   background-image: linear-gradient(
           45deg,
-          lightblue,
-          darkslategrey,
+          darkgray,
           black
   );
   opacity: 0.75;
@@ -47,10 +46,14 @@ iframe {
 #dialog {
   background: #1e1e1e;
   color: white;
+  width: 50vw;
+  height: 70vh;
 
   #gif_in_dialog {
     display: block;
-    margin: 0 auto;
+    margin: 10px auto;
+    max-width: 40vw;
+    min-width: 20vw;
   }
 
   & div {
