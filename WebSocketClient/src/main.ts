@@ -187,7 +187,9 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
 function createDiagramFromDot(res: string): void {
     instance().then(viz => {
         const div = document.getElementsByClassName("graph");
-        div[0].replaceChildren(viz.renderSVGElement(res!));
+        let svg = viz.renderSVGElement(res!);
+        svg.id = "SVGGraph";
+        div[0].replaceChildren(svg);
     });
 }
 

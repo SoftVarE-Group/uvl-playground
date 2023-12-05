@@ -26,6 +26,13 @@ body {
 
 .graph {
   overflow: scroll;
+  background: #1e1e1e;
+  height: 100%;
+}
+
+#SVGGraph {
+  margin: 30vh auto;
+  display: block;
 }
 
 ::backdrop {
