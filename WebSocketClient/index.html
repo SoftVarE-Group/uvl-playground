@@ -5,37 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="stylesheet" href="style.css">
         <title>UVL Playground</title>
-        <style>
-            #iframeContainer {
-              height: 1000px;
-              width: '100%';
-              display: none;
-            }
-        
-            iframe {
-              height: 100%;
-              width: 100%;
-              border: none; /* Remove iframe border */
-            }
-
-            #embeddedContentContainer {
-      height: 1000px;
-      width: 10000px;
-    }
-          </style>
     </head>
     <body>
     <div class="header">
         <h1>UVL Playground</h1>
         <h2 id="connection" style="color: red;"></h2>
     </div>
-    <div class="flex-container">
-        <div class="container">
-            <div id="container" class="editor"></div>
-        </div>
-        <div id="iframeContainer" class="config-view">
-            <iframe id="myIframe" title="Config"></iframe>
-        </div>
+    <div id="flex-container" class="flex-container">
+        <div id="container" class="editor"></div>
     </div>
 
     <div class="graph"></div>

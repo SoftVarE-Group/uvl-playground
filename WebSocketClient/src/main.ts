@@ -86,9 +86,14 @@ function displayConfigureView(configUri: string) {
         protocol = 'https';
     }
     const newUrl: string = `${protocol}://${config.languageServerHostName}:${url.port}${url.pathname}`;
-    const iframeContainer: any = document.getElementById('iframeContainer');
-    const myIframe: any = document.getElementById('myIframe');
-    iframeContainer.style.display = 'block';
+
+    let myIframe: HTMLIFrameElement | null = document.getElementById('config-view') as HTMLIFrameElement;
+    if(!myIframe){
+        myIframe = document.createElement('iframe') as HTMLIFrameElement;
+        myIframe.id = "config-view";
+        const iframeContainer: any = document.getElementById('flex-container');
+        iframeContainer.appendChild(myIframe);
+    }
     myIframe.src = newUrl;
 }
 
