@@ -24,25 +24,8 @@ body {
   text-align: center;
 }
 
-iframe {
-  border: none;
-}
-
 .graph {
-  padding: 10px;
   overflow: scroll;
-  text-align: center;
-}
-
-.flex-container {
-  display: flex;
-  height: 75%;
-  justify-content: space-around;
-}
-
-iframe {
-  flex-grow: 1;
-  max-width: 50%;
 }
 
 h1 {
@@ -53,15 +36,12 @@ h1 {
 
 .editor {
   background-color: #2d2d2d;
-  padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   min-width: 50%;
   max-width: 100%;
-  height:80ch;
+  height:80vh;
   border:1px solid grey;
-  margin-left: 10px;
-  margin-right: 10px;
 }
 
 p {
