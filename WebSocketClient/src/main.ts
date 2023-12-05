@@ -33,6 +33,7 @@ let languageClient: MonacoLanguageClient;
 let fileID;
 let model;
 const connectionText = document.getElementById("connection");
+let debounceGenGraph;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -129,6 +130,35 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                         client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
                             createDiagramFromDot(res as string);
                         });
+
+                        if(debounceGenGraph === undefined){
+                            debounceGenGraph = lodash.debounce(() => {
+                                client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                                    createDiagramFromDot(res as string);
+                                });
+                            }, 500);
+                            
+                            const firstPane = document.getElementById("first");
+                            const secondPane = document.getElementById("second");
+                            if(firstPane && secondPane){
+                                firstPane.style.width = "50%";
+                                secondPane.style.width = "50%"; 
+                            }
+
+                        }else{
+                            debounceGenGraph = undefined;
+                            const div = document.getElementsByClassName("graph");
+                            const firstPane = document.getElementById("first");
+                            while (div[0].firstChild) {
+                                div[0].removeChild(div[0].firstChild);
+                            }
+                            const secondPane = document.getElementById("second");
+                            if(firstPane && secondPane){
+                                firstPane.style.width = "100%";
+                                secondPane.style.width = "0%"; 
+                            }
+                        }
+                        
                     }
                     else {
                         next(command, args);
@@ -143,6 +173,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             }
         }
     });
+    
     return client;
 };
 
@@ -218,8 +249,12 @@ export const startPythonClient = async () => {
     model = modelRef.object;
 
     const debouncedSave = lodash.debounce(saveFm, 1000);
+
     modelRef.object.onDidChangeContent(() => {
        debouncedSave();
+       if(debounceGenGraph !== undefined){
+        debounceGenGraph();
+       }
     });
 
 
