@@ -33,6 +33,7 @@ let languageClient: MonacoLanguageClient;
 let fileID;
 let model;
 const connectionText = document.getElementById("connection");
+const MAX_NUMBER_LINES = 100;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -222,20 +223,30 @@ export const startPythonClient = async () => {
     // use the file create before
     const modelRef = await createModelReference(monaco.Uri.file(`/workspace/${fileID}.uvl`));
     model = modelRef.object;
-
-    const debouncedSave = lodash.debounce(saveFm, 1000);
-    modelRef.object.onDidChangeContent(() => {
-       debouncedSave();
-    });
-
-
     modelRef.object.setLanguageId(languageId);
 
     // create monaco editor
-    createConfiguredEditor(document.getElementById('container')!, {
+    const editor = createConfiguredEditor(document.getElementById('container')!, {
         model: modelRef.object.textEditorModel,
         automaticLayout: true
     });
+
+    editor.onDidChangeModelContent(() => {
+        const model = editor.getModel();
+        const lineCount = model?.getLineCount();
+        if(lineCount  && lineCount > MAX_NUMBER_LINES){
+            vscode.commands.executeCommand("undo");
+            if(connectionText){
+                connectionText.textContent = `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`
+                setTimeout(() => {
+                    connectionText.textContent = "";
+                }, 2000);
+            }
+        }
+        debouncedSave();
+    })
+
+    const debouncedSave = lodash.debounce(saveFm, 1000);
 };
 
 function getInitialFm(){
