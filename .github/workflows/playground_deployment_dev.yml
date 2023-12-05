@@ -1,4 +1,4 @@
-name: Deploy UVL Playground
+name: Deploy UVL Playground Dev
 
 env:
   HOSTNAME: 7470a63e-7b47-4833-a06c-1513f4fc534d.ul.bw-cloud-instance.org
@@ -22,9 +22,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: dev
+      - run: git branch -a
+      - run: cat ./WebSocketClient/index.html
+
       - name: Set hostname for WebSocketLanguageServer
         run: |
           sed -i "s/languageServerHostName: .*/languageServerHostName: \"$HOSTNAME\",/" ./WebSocketClient/src/config.ts

@@ -19,12 +19,20 @@ import { WebSocketMessageReader, WebSocketMessageWriter, toSocket } from 'vscode
 import { RegisteredFileSystemProvider, registerFileSystemOverlay, RegisteredMemoryFile } from 'vscode/service-override/files';
 import {LogLevel, Uri} from 'vscode';
 import config from './config.js';
+import { instance } from "@viz-js/viz";
+import { Message } from 'vscode-jsonrpc';
+import { v4 as uuidv4 } from 'uuid';
+import lodash from 'lodash';
+import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
 let languageClient: MonacoLanguageClient;
+let fileID;
+let model;
+const connectionText = document.getElementById("connection");
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -43,7 +51,18 @@ const createUrl = (hostname: string, port: number, path: string, searchParams: R
 
 const createWebSocket = (url: string): WebSocket => {
     const webSocket = new WebSocket(url);
+    webSocket.onerror = () => {
+        if(connectionText){
+            connectionText.textContent = "Could not connect to language server. Reconnecting ...";
+        }
+        setTimeout(() => {
+            createWebSocket(url);
+        }, 1000);
+    };
     webSocket.onopen = async () => {
+        if(connectionText){
+            connectionText.textContent = "";
+        }
         const socket = toSocket(webSocket);
         const reader = new WebSocketMessageReader(socket);
         const writer = new WebSocketMessageWriter(socket);
@@ -52,13 +71,16 @@ const createWebSocket = (url: string): WebSocket => {
             writer
         });
         await languageClient.start();
-        reader.onClose(() => languageClient.stop());
+        reader.onClose(() => {
+            languageClient.stop();
+            createWebSocket(url);
+        });
     };
     return webSocket;
 };
 
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
-    return new MonacoLanguageClient({
+    const client = new MonacoLanguageClient({
         name: 'UVL Language Client',
         clientOptions: {
             // use a language id as a document selector
@@ -76,6 +98,42 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             },
             synchronize: {
                 fileEvents: [vscode.workspace.createFileSystemWatcher('**')]
+            },
+            connectionOptions: {
+                // This construct can be used to filter the messages we are receiving from the language server
+                messageStrategy: {
+                    handleMessage(message: Message, next: (message: Message) => void) {
+                        if(Message.isRequest(message)){
+                            // Filters requests send by uvls -> Anti-Pattern in our opinion
+                        }
+                        else if(Message.isResponse(message)){
+                            // Filters responses send by uvls
+                        }
+                        else if(Message.isNotification(message)){
+                            // Filters Notification messages following json-rpc spec
+                        }
+                        // "next" is the default behaviour
+                        next(message);
+                    }
+                }
+            },
+            // The Middleware allows us to intercept all messages that would be sent to the language server
+            middleware: {
+                executeCommand(command, args, next) {
+                    const information = {command: command, arguments: args};
+                    if(command === "uvls/open_config") {
+                        //we do not support config view
+                        return;
+                    }
+                    else if(command === "uvls/generate_diagram") {
+                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                            createDiagramFromDot(res as string);
+                        });
+                    }
+                    else {
+                        next(command, args);
+                    }
+                },
             }
         },
         // create a language client connection from the JSON RPC connection on demand
@@ -85,7 +143,15 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             }
         }
     });
+    return client;
 };
+
+function createDiagramFromDot(res: string): void {
+    instance().then(viz => {
+        const div = document.getElementsByClassName("graph");
+        div[0].replaceChildren(viz.renderSVGElement(res!));
+    });
+}
 
 export const startPythonClient = async () => {
     // init vscode-api
@@ -95,7 +161,7 @@ export const startPythonClient = async () => {
             ...getThemeServiceOverride(),
             ...getTextmateServiceOverride(),
             ...getConfigurationServiceOverride(Uri.file('/workspace')),
-            ...getKeybindingsServiceOverride()
+            ...getKeybindingsServiceOverride(),
         },
         debugLogging: config.debug,
         logLevel: useDebugLogging,
@@ -133,7 +199,8 @@ export const startPythonClient = async () => {
     }`);
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
-    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file('/workspace/fm.uvl'), 'features\n\tfeature1\n\nconstraints\n\tfeature1'));
+    fileID = uuidv4();
+    fileSystemProvider.registerFile(new RegisteredMemoryFile(vscode.Uri.file(`/workspace/${fileID}.uvl`), getInitialFm()));
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
@@ -145,8 +212,17 @@ export const startPythonClient = async () => {
     }, location.protocol === 'https:'));
 
 
+
     // use the file create before
-    const modelRef = await createModelReference(monaco.Uri.file('/workspace/fm.uvl'));
+    const modelRef = await createModelReference(monaco.Uri.file(`/workspace/${fileID}.uvl`));
+    model = modelRef.object;
+
+    const debouncedSave = lodash.debounce(saveFm, 1000);
+    modelRef.object.onDidChangeContent(() => {
+       debouncedSave();
+    });
+
+
     modelRef.object.setLanguageId(languageId);
 
     // create monaco editor
@@ -155,3 +231,19 @@ export const startPythonClient = async () => {
         automaticLayout: true
     });
 };
+
+function getInitialFm(){
+    let initialFm = "features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1";
+    const storedFm = window.localStorage.getItem("fm");
+    if(storedFm !== null){
+        initialFm = storedFm;
+    }
+    return initialFm;
+}
+
+function saveFm(){
+    if(model !== undefined){
+        const content = model.textEditorModel?.getValue();
+        window.localStorage.setItem("fm", content);
+    }
+}

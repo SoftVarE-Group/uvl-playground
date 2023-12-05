@@ -7,6 +7,7 @@ services:
       - 80:80
       - 443:443
       - 30000:30000
+      - 3000:3000
     networks:
       - proxy
     volumes:
@@ -15,7 +16,8 @@ services:
       #- /var/log:/var/log
     command:
       - --api.dashboard=true
-      - --log.level=INFO
+      - --api.insecure=true
+      - --log.level=DEBUG
       #- --log.filepath=/var/log/traefik.log
       - --accesslog=true
       #- --accesslog.filepath=/var/log/traefik-access.log
@@ -23,6 +25,7 @@ services:
       - --providers.docker.exposedByDefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.ws.address=:30000
+      - --entrypoints.configure.address=:3000
       - --entrypoints.ws.http.tls.certresolver=myresolver
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
@@ -35,7 +38,7 @@ services:
       - --certificatesResolvers.myresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
     labels:
       - traefik.enable=true
-      - traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`) && Path(`/dashboard`)
+      - traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`) && (PathPrefix(`/dashboard/`) || PathPrefix(`/api`))
       - traefik.http.routers.mydashboard.service=api@internal
       - traefik.http.routers.mydashboard.middlewares=myauth
       - traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/
@@ -66,11 +69,18 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.languageserver.entrypoints=ws"
       - "traefik.http.routers.languageserver.rule=Host(`${HOSTNAME}`) && Path(`/`)"
       - "traefik.http.services.languageserver.loadbalancer.server.port=30000"
-      - "traefik.http.routers.languageserver.entrypoints=ws"
       - "traefik.http.routers.languageserver.tls.certresolver=myresolver"
-      
+      - "traefik.http.routers.languageserver.service=languageserver"
+
+      - "traefik.http.routers.configureview.entrypoints=configure"
+      - "traefik.http.routers.configureview.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.configureview.service=configureview"
+      - "traefik.http.services.configureview.loadbalancer.server.port=3000"
+      - "traefik.http.routers.configureview.tls.certresolver=myresolver"
+
 networks:
   proxy:
     name: proxy
