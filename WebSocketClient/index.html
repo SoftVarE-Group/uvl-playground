@@ -13,14 +13,30 @@
         <h1>UVL Playground</h1>
         <h2 id="connection" style="color: red;"></h2>
     </div>
+    <div>
+        <dialog id="dialog">
+            <div>
+                <button autofocus id="modalClose">X</button>
+            </div>
+            <h1>Get the UVLS VSCode Extension</h1>
+            <p>You are trying to access the Configuration Page for Feature Models.
+                As by now, the Web-Playground does not support this, but it is available in the VSCode Extension!
+                Here is a preview:
+            </p>
+            <img src="https://raw.githubusercontent.com/Universal-Variability-Language/uvl-lsp/master/img/show_editor.gif" id="gif_in_dialog" alt="Preview">
+            <p>Get the extension <a href="https://marketplace.visualstudio.com/items?itemName=caradhras.uvls-code">here</a></p>
+        </dialog>
+    </div>
     <div class="splitter">
         <div id="first">
             <div id="container" class="editor"></div>
         </div>
         <div id="separator" ></div>
+
         <div id="second">
             <div class="graph"></div>
             
+
         </div>
     </div>
 
