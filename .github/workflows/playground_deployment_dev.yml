@@ -27,6 +27,7 @@ jobs:
           ref: dev
       - run: git branch -a
       - run: cat ./WebSocketClient/index.html
+
       - name: Set hostname for WebSocketLanguageServer
         run: |
           sed -i "s/languageServerHostName: .*/languageServerHostName: \"$HOSTNAME\",/" ./WebSocketClient/src/config.ts
