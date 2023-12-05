@@ -23,6 +23,7 @@ import { instance } from "@viz-js/viz";
 import { Message } from 'vscode-jsonrpc';
 import { v4 as uuidv4 } from 'uuid';
 import lodash from 'lodash';
+import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
@@ -78,8 +79,26 @@ const createWebSocket = (url: string): WebSocket => {
     return webSocket;
 };
 
+function displayConfigureView(configUri: string) {
+    const url = new URL(configUri);
+    let protocol = 'http';
+    if (window.location.protocol === "https:") {
+        protocol = 'https';
+    }
+    const newUrl: string = `${protocol}://${config.languageServerHostName}:${url.port}${url.pathname}`;
+
+    let myIframe: HTMLIFrameElement | null = document.getElementById('config-view') as HTMLIFrameElement;
+    if(!myIframe){
+        myIframe = document.createElement('iframe') as HTMLIFrameElement;
+        myIframe.id = "config-view";
+        const iframeContainer: any = document.getElementById('flex-container');
+        iframeContainer.appendChild(myIframe);
+    }
+    myIframe.src = newUrl;
+}
+
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
-    return new MonacoLanguageClient({
+    const client = new MonacoLanguageClient({
         name: 'UVL Language Client',
         clientOptions: {
             // use a language id as a document selector
@@ -99,38 +118,41 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                 fileEvents: [vscode.workspace.createFileSystemWatcher('**')]
             },
             connectionOptions: {
+                // This construct can be used to filter the messages we are receiving from the language server
                 messageStrategy: {
                     handleMessage(message: Message, next: (message: Message) => void) {
                         if(Message.isRequest(message)){
-                            const m: any = message;
-                            if(m.method === 'workspace/executeCommand' && m.params.command === 'uvls.open_web'){
-                                const configUri: string = m.params.arguments[0].uri;
-                                const url = new URL(configUri);
-                                let protocoll = 'http';
-                                if (window.location.protocol === "https:") {
-                                    protocoll = 'https';
-                                 }
-                                const newUrl: string = `${protocoll}://${config.languageServerHostName}:${url.port}${url.pathname}`;
-                                const iframeContainer: any = document.getElementById('iframeContainer');
-                                const myIframe: any = document.getElementById('myIframe');
-                                    iframeContainer.style.display = 'block';
-                                    myIframe.src = newUrl;
-                            }
+                            // Filters requests send by uvls -> Anti-Pattern in our opinion
                         }
-                        if(Message.isResponse(message)){
-                            let result = message.result;
-                            if(typeof result === "string" || result instanceof String){
-                                if(result.startsWith("digraph")){
-                                    createDiagramFromDot(result as string);
-                                }
-                            }
+                        else if(Message.isResponse(message)){
+                            // Filters responses send by uvls
                         }
-                        if(Message.isNotification(message)){
+                        else if(Message.isNotification(message)){
+                            // Filters Notification messages following json-rpc spec
                         }
-
+                        // "next" is the default behaviour
                         next(message);
                     }
                 }
+            },
+            // The Middleware allows us to intercept all messages that would be sent to the language server
+            middleware: {
+                executeCommand(command, args, next) {
+                    const information = {command: command, arguments: args};
+                    if(command === "uvls/open_config") {
+                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                            displayConfigureView(res.uri);
+                        });
+                    }
+                    else if(command === "uvls/generate_diagram") {
+                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                            createDiagramFromDot(res as string);
+                        });
+                    }
+                    else {
+                        next(command, args);
+                    }
+                },
             }
         },
         // create a language client connection from the JSON RPC connection on demand
@@ -140,6 +162,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             }
         }
     });
+    return client;
 };
 
 function createDiagramFromDot(res: string): void {
@@ -217,8 +240,8 @@ export const startPythonClient = async () => {
     modelRef.object.onDidChangeContent(() => {
        debouncedSave();
     });
-    
-    
+
+
     modelRef.object.setLanguageId(languageId);
 
     // create monaco editor
