@@ -1,7 +1,7 @@
 name: Deploy UVL Playground
 
 env:
-  HOSTNAME: 55568392-f169-4f7f-b552-57cf451a2d81.ul.bw-cloud-instance.org
+  HOSTNAME: uvl.uni-ulm.de
   USERNAME: ubuntu
   WORKDIR: /home/ubuntu
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -41,9 +41,9 @@ jobs:
         # Make sure to add the following command if dependencies change for the language server. It just takes forever
         # scp -r ./WebSocketClient/UVLPlayground/node_modules $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient/UVLPlayground
         run: |
-          scp -r ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
-          scp -r ./WebSocketClient $USERNAME@$HOSTNAME:$WORKDIR/WebSocketClient
-          scp -r ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
-          scp -r ./.env $USERNAME@$HOSTNAME:$WORKDIR
+          rsync -avz --update ./WebSocketLanguageServer $USERNAME@$HOSTNAME:$WORKDIR
+          rsync -avz --update ./WebSocketClient $USERNAME@$HOSTNAME:$WORKDIR
+          rsync -avz --update ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
+          rsync -avz --update ./.env $USERNAME@$HOSTNAME:$WORKDIR
       - name: Build and run containers
         run: ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'pwd && docker compose up --build -d'
