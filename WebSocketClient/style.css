@@ -34,6 +34,37 @@ iframe {
   text-align: center;
 }
 
+::backdrop {
+  background-image: linear-gradient(
+          45deg,
+          lightblue,
+          darkslategrey,
+          black
+  );
+  opacity: 0.75;
+}
+
+#dialog {
+  background: #1e1e1e;
+  color: white;
+
+  #gif_in_dialog {
+    display: block;
+    margin: 0 auto;
+  }
+
+  & div {
+    text-align: right;
+
+    & button {
+      color: white;
+      background: #1e1e1e;
+      border: none;
+      font-size: 20pt;
+    }
+  }
+}
+
 .flex-container {
   display: flex;
   height: 75%;

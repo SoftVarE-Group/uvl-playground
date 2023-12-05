@@ -122,6 +122,12 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                 executeCommand(command, args, next) {
                     const information = {command: command, arguments: args};
                     if(command === "uvls/open_config") {
+                        const dialog: HTMLDialogElement | null = document.querySelector("#dialog")
+                        const modalClose: HTMLButtonElement | null = document.querySelector('#modalClose');
+                        if(modalClose){
+                            modalClose.onclick = () => dialog?.close();
+                        }
+                        dialog?.showModal();
                         //we do not support config view
                         return;
                     }
