@@ -281,7 +281,7 @@ export const startPythonClient = async () => {
             if(numberOfLines && numberOfLines > MAX_LINES){
                 let lines = editor.getModel()?.getLinesContent();
                 lines?.splice(MAX_LINES);
-                const newContent = lines?.reduce((p, c, i, a) => {return p + "\n" + c});
+                const newContent = lines?.reduce((p, c) => {return p + "\n" + c});
                 if(newContent !== undefined){
                     const position = editor.getPosition();
                     editor.getModel()?.setValue(newContent);
