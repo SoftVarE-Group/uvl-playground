@@ -79,24 +79,6 @@ const createWebSocket = (url: string): WebSocket => {
     return webSocket;
 };
 
-function displayConfigureView(configUri: string) {
-    const url = new URL(configUri);
-    let protocol = 'http';
-    if (window.location.protocol === "https:") {
-        protocol = 'https';
-    }
-    const newUrl: string = `${protocol}://${config.languageServerHostName}:${url.port}${url.pathname}`;
-
-    let myIframe: HTMLIFrameElement | null = document.getElementById('config-view') as HTMLIFrameElement;
-    if(!myIframe){
-        myIframe = document.createElement('iframe') as HTMLIFrameElement;
-        myIframe.id = "config-view";
-        const iframeContainer: any = document.getElementById('flex-container');
-        iframeContainer.appendChild(myIframe);
-    }
-    myIframe.src = newUrl;
-}
-
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
     const client = new MonacoLanguageClient({
         name: 'UVL Language Client',
@@ -140,9 +122,8 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                 executeCommand(command, args, next) {
                     const information = {command: command, arguments: args};
                     if(command === "uvls/open_config") {
-                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
-                            displayConfigureView(res.uri);
-                        });
+                        //we do not support config view
+                        return;
                     }
                     else if(command === "uvls/generate_diagram") {
                         client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
