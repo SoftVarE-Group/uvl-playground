@@ -34,6 +34,7 @@ let fileID;
 let model;
 const connectionText = document.getElementById("connection");
 let debounceGenGraph;
+const MAX_LINES = 100;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -263,14 +264,34 @@ export const startPythonClient = async () => {
        }
     });
 
+    
+
 
     modelRef.object.setLanguageId(languageId);
 
     // create monaco editor
-    createConfiguredEditor(document.getElementById('container')!, {
+    const editor = createConfiguredEditor(document.getElementById('container')!, {
         model: modelRef.object.textEditorModel,
         automaticLayout: true
     });
+
+    if(editor !== null){
+        editor.onDidChangeModelContent(() => {
+            const numberOfLines = editor.getModel()?.getLineCount();
+            if(numberOfLines && numberOfLines > MAX_LINES){
+                let lines = editor.getModel()?.getLinesContent();
+                lines?.splice(MAX_LINES);
+                const newContent = lines?.reduce((p, c, i, a) => {return p + "\n" + c});
+                if(newContent !== undefined){
+                    const position = editor.getPosition();
+                    editor.getModel()?.setValue(newContent);
+                    if(position !== null){
+                        editor.setPosition(position);
+                    }
+                }
+            }
+        });
+    }
 };
 
 function getInitialFm(){
