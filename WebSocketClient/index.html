@@ -1,141 +1,110 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="split.css">
-        <link rel="stylesheet" href="toggleSwitch.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/3.4.0/introjs.min.css">
-        <title>UVL Playground</title>
-    </head>
-    <body>
-    <div class="header">
-        <h1>UVL Playground</h1>
-        <h2 id="connection" style="color: red;"></h2>
-    </div>
-    <button id="tutorialButton">Give me a quick tutorial!</button>
-    <div>
-        <dialog id="dialog">
-            <div>
-                <button autofocus id="modalClose">X</button>
-            </div>
-            <h1>Get the UVLS VSCode Extension</h1>
-            <p>You are trying to access the Configuration Page for Feature Models.
-                As by now, the Web-Playground does not support this, but it is available in the VSCode Extension!
-                Here is a preview:
-            </p>
-            <img src="https://raw.githubusercontent.com/Universal-Variability-Language/uvl-lsp/master/img/show_editor.gif" id="gif_in_dialog" alt="Preview">
-            <p>Get the extension <a href="https://marketplace.visualstudio.com/items?itemName=caradhras.uvls-code">here</a></p>
-        </dialog>
-    </div>
-    <div class="splitter">
-        <div id="first">
-            <div id="container" class="editor"></div>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="split.css">
+    <link rel="stylesheet" href="toggleSwitch.css">
+    <link rel="stylesheet" href="./node_modules/intro.js/introjs.css">
+    <link rel="stylesheet" href="./node_modules/intro.js/themes/introjs-modern.css">
+    <title>UVL Playground</title>
+</head>
+<body>
+<div class="header">
+    <h1>UVL Playground</h1>
+    <h2 id="connection" style="color: red;"></h2>
+</div>
+<button id="tutorialButton">Give me a quick tutorial!</button>
+<div>
+    <dialog id="dialog">
+        <div>
+            <button autofocus id="modalClose">X</button>
         </div>
-        <div id="separator" ></div>
-
-        <div id="second">
-            <div class="graph"></div>
-            
-
-        </div>
+        <h1>Get the UVLS VSCode Extension</h1>
+        <p>You are trying to access the Configuration Page for Feature Models.
+            As by now, the Web-Playground does not support this, but it is available in the VSCode Extension!
+            Here is a preview:
+        </p>
+        <img src="https://raw.githubusercontent.com/Universal-Variability-Language/uvl-lsp/master/img/show_editor.gif"
+             id="gif_in_dialog" alt="Preview">
+        <p>Get the extension <a href="https://marketplace.visualstudio.com/items?itemName=caradhras.uvls-code">here</a>
+        </p>
+    </dialog>
+</div>
+<div class="splitter">
+    <div id="first">
+        <div id="container" class="editor"></div>
     </div>
+    <div id="separator"></div>
 
-    <div class="footer">
-        <p>The Universal Variability Language (UVL) is a community effort towards a widely adopted textual specification
-            for feature models. This playground provides the opportunity to get used to the language with
-            syntax-highlighting, autocompletion, and simple analysis. It is based on the <a
-                    href="https://github.com/Universal-Variability-Language/uvl-lsp">UVL Language Server</a>. To fully
-            use all features use the UVLS - Universal Variability Language Server extension for visual studio code. </p>
+    <div id="second">
+        <div class="graph"></div>
+
+
     </div>
-    <script type="module">
-        import {startPythonClient} from "./src/main.ts";
+</div>
 
-        startPythonClient();
-    </script>
-    <script>
-        // A function is used for dragging and moving
-function dragElement(element, direction)
-{
-    var   md; // remember mouse down info
-    const first  = document.getElementById("first");
-    const second = document.getElementById("second");
+<div class="footer">
+    <p>The Universal Variability Language (UVL) is a community effort towards a widely adopted textual specification
+        for feature models. This playground provides the opportunity to get used to the language with
+        syntax-highlighting, autocompletion, and simple analysis. It is based on the <a
+                href="https://github.com/Universal-Variability-Language/uvl-lsp">UVL Language Server</a>. To fully
+        use all features use the UVLS - Universal Variability Language Server extension for visual studio code. </p>
+</div>
+<script type="module">
+    import {startPythonClient} from "./src/main.ts";
 
-    element.onmousedown = onMouseDown;
+    startPythonClient();
+</script>
+<script>
+    // A function is used for dragging and moving
+    function dragElement(element, direction) {
+        var md; // remember mouse down info
+        const first = document.getElementById("first");
+        const second = document.getElementById("second");
 
-    function onMouseDown(e)
-    {
-        //console.log("mouse down: " + e.clientX);
-        md = {e,
-              offsetLeft:  element.offsetLeft,
-              offsetTop:   element.offsetTop,
-              firstWidth:  first.offsetWidth,
-              secondWidth: second.offsetWidth
-             };
+        element.onmousedown = onMouseDown;
 
-        document.onmousemove = onMouseMove;
-        document.onmouseup = () => {
-            //console.log("mouse up");
-            document.onmousemove = document.onmouseup = null;
-        }
-    }
+        function onMouseDown(e) {
+            //console.log("mouse down: " + e.clientX);
+            md = {
+                e,
+                offsetLeft: element.offsetLeft,
+                offsetTop: element.offsetTop,
+                firstWidth: first.offsetWidth,
+                secondWidth: second.offsetWidth
+            };
 
-    function onMouseMove(e)
-    {
-        //console.log("mouse move: " + e.clientX);
-        var delta = {x: e.clientX - md.e.clientX,
-                     y: e.clientY - md.e.clientY};
-
-        if (direction === "H" ) // Horizontal
-        {
-            // Prevent negative-sized elements
-            delta.x = Math.min(Math.max(delta.x, -md.firstWidth),
-                       md.secondWidth);
-
-            element.style.left = md.offsetLeft + delta.x + "px";
-            first.style.width = (md.firstWidth + delta.x) + "px";
-            second.style.width = (md.secondWidth - delta.x) + "px";
-        }
-    }
-}
-
-
-dragElement( document.getElementById("separator"), "H" );
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/3.4.0/intro.min.js"></script>
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-    var intro = introJs();
-
-    intro.setOptions({
-        steps: [
-            {
-                element: '#container',
-                intro: 'This is the texteditor where you write and edit your uvl feature model.',
-            },
-            {
-                element: '.codelens-decoration',
-                intro: 'You can use the buttons to activate and deactivate functionality.'
-            },
-            {
-                element: "[id='1']",
-                intro: 'Click here to visualize your feature model und click on it again to hide it again.'
-            },
-            {
-                element: "#separator",
-                intro: 'You can change the size of the editor and the visualization with your mouse.'
+            document.onmousemove = onMouseMove;
+            document.onmouseup = () => {
+                //console.log("mouse up");
+                document.onmousemove = document.onmouseup = null;
             }
-        ],
-    });
+        }
 
-    const button = document.getElementById("tutorialButton");
-    button.addEventListener("click", () => {
-        intro.start();
-    });
-    
-});
+        function onMouseMove(e) {
+            //console.log("mouse move: " + e.clientX);
+            var delta = {
+                x: e.clientX - md.e.clientX,
+                y: e.clientY - md.e.clientY
+            };
 
-    </script>
-    </body>
+            if (direction === "H") // Horizontal
+            {
+                // Prevent negative-sized elements
+                delta.x = Math.min(Math.max(delta.x, -md.firstWidth),
+                    md.secondWidth);
+
+                element.style.left = md.offsetLeft + delta.x + "px";
+                first.style.width = (md.firstWidth + delta.x) + "px";
+                second.style.width = (md.secondWidth - delta.x) + "px";
+            }
+        }
+    }
+
+
+    dragElement(document.getElementById("separator"), "H");
+</script>
+</body>
 </html>

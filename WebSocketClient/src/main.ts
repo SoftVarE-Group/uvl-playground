@@ -26,6 +26,7 @@ import lodash from 'lodash';
 import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
+import {initIntroJS} from "./intro.ts";
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
@@ -282,6 +283,7 @@ export const startPythonClient = async () => {
         }
     })
 
+    initIntroJS();
     const debouncedSave = lodash.debounce(saveFm, 1000);
 };
 
