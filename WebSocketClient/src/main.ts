@@ -26,6 +26,7 @@ import lodash from 'lodash';
 import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
+import {editor} from "monaco-editor";
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
@@ -34,6 +35,7 @@ let fileID;
 let model;
 const connectionText = document.getElementById("connection");
 const MAX_NUMBER_LINES = 100;
+const MAX_NUMBER_CHARACTERS = 10000;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -233,11 +235,24 @@ export const startPythonClient = async () => {
 
     editor.onDidChangeModelContent(() => {
         const model = editor.getModel();
+        if(!model){
+            return;
+        }
         const lineCount = model?.getLineCount();
+
         if(lineCount  && lineCount > MAX_NUMBER_LINES){
             vscode.commands.executeCommand("undo");
             if(connectionText){
                 connectionText.textContent = `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`
+                setTimeout(() => {
+                    connectionText.textContent = "";
+                }, 2000);
+            }
+        }
+        else if (aggregateCharacters(model) > MAX_NUMBER_CHARACTERS){
+            vscode.commands.executeCommand("undo");
+            if(connectionText){
+                connectionText.textContent = `The Editor only allows content up to ${MAX_NUMBER_CHARACTERS} Characters!`
                 setTimeout(() => {
                     connectionText.textContent = "";
                 }, 2000);
@@ -248,6 +263,12 @@ export const startPythonClient = async () => {
 
     const debouncedSave = lodash.debounce(saveFm, 1000);
 };
+
+function aggregateCharacters(model: editor.ITextModel): number {
+    let addReducer = (previousValue: number, currentValue: string) => {return previousValue + currentValue.length};
+    const characters: number = model?.getLinesContent().reduce(addReducer, 0);
+    return characters;
+}
 
 function getInitialFm(){
     let initialFm = "features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1";
