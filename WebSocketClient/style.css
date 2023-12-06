@@ -7,7 +7,6 @@ body, h1, p {
 body {
   font-family: Arial, sans-serif;
   background-color: #1e1e1e; /* Dark background color */
-  color: #ffffff; /* Light text color */
 }
 
 .container {
@@ -18,10 +17,12 @@ body {
 
 .header {
   text-align: center;
+  color: #ffffff; /* Light text color */
 }
 
 .footer {
   text-align: center;
+  color: #ffffff; /* Light text color */
 }
 
 .graph {
