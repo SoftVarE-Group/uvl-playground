@@ -1,4 +1,5 @@
 import introJs from "intro.js";
+import { sendGenerateGraphCommand } from "./main";
 
 
 export const initIntroJS = () => {
@@ -20,9 +21,16 @@ export const initIntroJS = () => {
     });
 
     const button = document.getElementById("tutorialButton");
+
+    intro.onchange(function(targetElement) {
+        if(targetElement.id === "1"){
+            sendGenerateGraphCommand();
+        }
+        
+      });
+
     button?.addEventListener("click", () => {
         intro.start();
-        intro.nextStep();
     });
 
 }
