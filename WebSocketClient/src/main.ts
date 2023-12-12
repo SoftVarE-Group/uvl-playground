@@ -65,9 +65,6 @@ const createWebSocket = (url: string): WebSocket => {
         if(connectionText){
             displayEditorError( "Could not connect to language server. Reconnecting ...");
         }
-        if(languageClient !== undefined && languageClient.isRunning()){
-            //languageClient.dispose();
-        }
         setTimeout(() => {
             createWebSocket(url);
         }, 500);
@@ -86,24 +83,12 @@ const createWebSocket = (url: string): WebSocket => {
 
         languageClient.start();
         reader.onClose(() => {
-            if(languageClient !== undefined && languageClient.isRunning()){
-                //languageClient.dispose();
-            }
             setTimeout(() => {
                 createWebSocket(url);
             }, 500);
         });
     };
-    /*
-    webSocket.onclose = () => {
-        if(languageClient !== undefined && languageClient.isRunning()){
-            languageClient.dispose();
-        }
-        setTimeout(() => {
-            createWebSocket(url);
-        }, 500);
-    }
-    */
+    
     return webSocket;
 };
 
