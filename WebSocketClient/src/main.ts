@@ -62,7 +62,7 @@ const createWebSocket = (url: string): WebSocket => {
     const webSocket = new WebSocket(url);
     webSocket.onerror = () => {
         if(connectionText){
-            connectionText.textContent = "Could not connect to language server. Reconnecting ...";
+            displayEditorError( "Could not connect to language server. Reconnecting ...");
         }
         setTimeout(() => {
             createWebSocket(url);
@@ -70,7 +70,7 @@ const createWebSocket = (url: string): WebSocket => {
     };
     webSocket.onopen = async () => {
         if(connectionText){
-            connectionText.textContent = "";
+            displayEditorError("");
         }
         const socket = toSocket(webSocket);
         const reader = new WebSocketMessageReader(socket);
@@ -308,6 +308,8 @@ export const startPythonClient = async () => {
 
 let globalEditor: IStandaloneCodeEditor | null;
 
+
+let currentWidget: IOverlayWidget | null;
 function displayEditorError(msg: string) {
     if(!globalEditor){
         return;
@@ -330,6 +332,10 @@ function displayEditorError(msg: string) {
             return node;
         }
     }
+    if(currentWidget){
+        globalEditor.removeOverlayWidget(currentWidget);
+    }
+    currentWidget = overlayWidget;
     globalEditor.addOverlayWidget(overlayWidget);
     // setTimeout(() => {
     //     if(!globalEditor) return;
