@@ -26,6 +26,7 @@ import lodash from 'lodash';
 import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
+import {initIntroJS} from "./intro.ts";
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
@@ -34,6 +35,7 @@ let fileID;
 let model;
 const connectionText = document.getElementById("connection");
 let debounceGenGraph;
+let updateGraph = false;
 const MAX_NUMBER_LINES = 100;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
@@ -123,6 +125,14 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             middleware: {
                 executeCommand(command, args, next) {
                     const information = {command: command, arguments: args};
+                    debounceGenGraph = lodash.debounce(() => {
+                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+                            createDiagramFromDot(res as string);
+                        });
+                    }, 500);
+                    console.log("command: " + command);
+                    console.log("args: " + args);
+
                     if(command === "uvls/open_config") {
                         const dialog: HTMLDialogElement | null = document.querySelector("#dialog")
                         const modalClose: HTMLButtonElement | null = document.querySelector('#modalClose');
@@ -138,12 +148,8 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                             createDiagramFromDot(res as string);
                         });
 
-                        if(debounceGenGraph === undefined){
-                            debounceGenGraph = lodash.debounce(() => {
-                                client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
-                                    createDiagramFromDot(res as string);
-                                });
-                            }, 500);
+                        if(!updateGraph){
+                            updateGraph = true;
 
                             const firstPane = document.getElementById("first");
                             const secondPane = document.getElementById("second");
@@ -153,7 +159,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                             }
 
                         }else{
-                            debounceGenGraph = undefined;
+                            updateGraph = false;
                             const div = document.getElementsByClassName("graph");
                             const firstPane = document.getElementById("first");
                             while (div[0].firstChild) {
@@ -277,11 +283,12 @@ export const startPythonClient = async () => {
             }
         }
         debouncedSave();
-        if(debounceGenGraph !== undefined){
+        if(updateGraph && debounceGenGraph !== undefined){
             debounceGenGraph();
         }
     })
 
+    initIntroJS();
     const debouncedSave = lodash.debounce(saveFm, 1000);
 };
 
@@ -299,4 +306,8 @@ function saveFm(){
         const content = model.textEditorModel?.getValue();
         window.localStorage.setItem("fm", content);
     }
+}
+
+export function sendGenerateGraphCommand(){
+    vscode.commands.executeCommand("uvls/generate_diagram", `file:///workspace/${fileID}.uvl`);
 }
