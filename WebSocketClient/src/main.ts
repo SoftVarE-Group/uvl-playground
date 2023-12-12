@@ -27,6 +27,10 @@ import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
+import {editor} from "monaco-editor";
+import IOverlayWidget = editor.IOverlayWidget;
+import IContentWidget = editor.IContentWidget;
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
@@ -37,6 +41,7 @@ const connectionText = document.getElementById("connection");
 let debounceGenGraph;
 let updateGraph = false;
 const MAX_NUMBER_LINES = 100;
+const MAX_NUMBER_CHARACTERS = 10000;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -272,14 +277,21 @@ export const startPythonClient = async () => {
 
     editor.onDidChangeModelContent(() => {
         const model = editor.getModel();
+        if(!model){
+            return;
+        }
         const lineCount = model?.getLineCount();
+
         if(lineCount  && lineCount > MAX_NUMBER_LINES){
-            vscode.commands.executeCommand("undo");
+            vscode.commands.executeCommand("deleteLeft");
             if(connectionText){
-                connectionText.textContent = `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`
-                setTimeout(() => {
-                    connectionText.textContent = "";
-                }, 2000);
+                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`);
+            }
+        }
+        else if (aggregateCharacters(model) > MAX_NUMBER_CHARACTERS){
+            vscode.commands.executeCommand("deleteLeft");
+            if(connectionText){
+                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${MAX_NUMBER_CHARACTERS} Characters!`);
             }
         }
         debouncedSave();
@@ -290,7 +302,96 @@ export const startPythonClient = async () => {
 
     initIntroJS();
     const debouncedSave = lodash.debounce(saveFm, 1000);
+
+    globalEditor = editor;
 };
+
+let globalEditor: IStandaloneCodeEditor | null;
+
+function displayEditorError(msg: string) {
+    if(!globalEditor){
+        return;
+    }
+    const overlayWidget: IOverlayWidget = {
+        getId(): string {
+            return 'myCustomWidget';
+        },
+        getPosition(): editor.IOverlayWidgetPosition | null {
+            return {
+                preference: monaco.editor.OverlayWidgetPositionPreference.TOP_CENTER
+            }
+        },
+        getDomNode(): HTMLElement {
+            const node = document.createElement('div');
+            const span = document.createElement('span');
+            span.textContent = msg;
+            span.className = "top-error";
+            node.replaceChildren(span);
+            return node;
+        }
+    }
+    globalEditor.addOverlayWidget(overlayWidget);
+    // setTimeout(() => {
+    //     if(!globalEditor) return;
+    //     globalEditor.removeOverlayWidget(overlayWidget);
+    // }, 2000);
+}
+
+let currentContentWidget: IContentWidget | null;
+
+function displayEditorErrorAtContent(editor: editor.IStandaloneCodeEditor, msg: string) {
+
+    const selection = editor.getSelection();
+    const contentWidget: IContentWidget = {
+        getId(): string {
+            return 'myCustomWidget';
+        },
+        getPosition(): editor.IContentWidgetPosition | null {
+            if(selection){
+                return {
+                    position: selection.getStartPosition(),
+                    preference: [monaco.editor.ContentWidgetPositionPreference.BELOW]
+                }
+            }
+            return {
+                position: {lineNumber: 1, column: 1},
+                preference: [monaco.editor.ContentWidgetPositionPreference.BELOW]
+            }
+        },
+        getDomNode(): HTMLElement {
+            const node = document.createElement('div');
+            const span = document.createElement('span');
+            node.className = "uvl-tooltip";
+            span.className = "tooltip-text";
+            span.textContent = msg;
+            node.replaceChildren(span);
+            return node;
+        }
+    }
+    if(currentContentWidget){
+        editor.removeContentWidget(currentContentWidget);
+    }
+    currentContentWidget = contentWidget;
+    editor.addContentWidget(contentWidget);
+
+    debouceRemoveWidget(editor);
+}
+
+const debouceRemoveWidget = lodash.debounce(removeWidget, 2000);
+
+function removeWidget(editor: IStandaloneCodeEditor) {
+    console.log("Editor: ", editor);
+    if(currentContentWidget){
+        editor.removeContentWidget(currentContentWidget);
+    }
+    currentContentWidget = null;
+}
+
+function aggregateCharacters(model: editor.ITextModel): number {
+    let addReducer = (previousValue: number, currentValue: string) => {return previousValue + currentValue.length};
+    const characters: number = model?.getLinesContent().reduce(addReducer, 0);
+    return characters;
+}
 
 function getInitialFm(){
     let initialFm = "features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1";
