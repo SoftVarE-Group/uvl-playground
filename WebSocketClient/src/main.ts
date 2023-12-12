@@ -68,7 +68,7 @@ const createWebSocket = (url: string): WebSocket => {
             createWebSocket(url);
         }, 1000);
     };
-    webSocket.onopen = async () => {
+    webSocket.onopen = () => {
         if(connectionText){
             displayEditorError("");
         }
@@ -79,7 +79,8 @@ const createWebSocket = (url: string): WebSocket => {
             reader,
             writer
         });
-        await languageClient.start();
+
+        languageClient.start();
         reader.onClose(() => {
             languageClient.stop();
             createWebSocket(url);
