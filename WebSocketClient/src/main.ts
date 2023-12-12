@@ -28,8 +28,8 @@ import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 import {editor} from "monaco-editor";
 import IOverlayWidget = editor.IOverlayWidget;
-import IEditor = editor.IEditor;
 import IContentWidget = editor.IContentWidget;
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
@@ -161,7 +161,8 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
 function createDiagramFromDot(res: string): void {
     instance().then(viz => {
         const div = document.getElementsByClassName("graph");
-        div[0].replaceChildren(viz.renderSVGElement(res!));
+        let svgElement = viz.renderSVGElement(res!);
+        div[0].replaceChildren(svgElement);
     });
 }
 
@@ -244,13 +245,13 @@ export const startPythonClient = async () => {
         const lineCount = model?.getLineCount();
 
         if(lineCount  && lineCount > MAX_NUMBER_LINES){
-            vscode.commands.executeCommand("undo");
+            vscode.commands.executeCommand("deleteLeft");
             if(connectionText){
-                displayEditorError(editor, `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`);
+                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`);
             }
         }
         else if (aggregateCharacters(model) > MAX_NUMBER_CHARACTERS){
-            vscode.commands.executeCommand("undo");
+            vscode.commands.executeCommand("deleteLeft");
             if(connectionText){
                 displayEditorErrorAtContent(editor, `The Editor only allows content up to ${MAX_NUMBER_CHARACTERS} Characters!`);
             }
@@ -258,9 +259,16 @@ export const startPythonClient = async () => {
         debouncedSave();
     })
     const debouncedSave = lodash.debounce(saveFm, 1000);
+
+    globalEditor = editor;
 };
 
-function displayEditorError(editor: editor.IStandaloneCodeEditor, msg: string) {
+let globalEditor: IStandaloneCodeEditor | null;
+
+function displayEditorError(msg: string) {
+    if(!globalEditor){
+        return;
+    }
     const overlayWidget: IOverlayWidget = {
         getId(): string {
             return 'myCustomWidget';
@@ -274,15 +282,19 @@ function displayEditorError(editor: editor.IStandaloneCodeEditor, msg: string) {
             const node = document.createElement('div');
             const span = document.createElement('span');
             span.textContent = msg;
+            span.className = "top-error";
             node.replaceChildren(span);
             return node;
         }
     }
-    editor.addOverlayWidget(overlayWidget);
-    setTimeout(() => {
-        editor.removeOverlayWidget(overlayWidget);
-    }, 2000);
+    globalEditor.addOverlayWidget(overlayWidget);
+    // setTimeout(() => {
+    //     if(!globalEditor) return;
+    //     globalEditor.removeOverlayWidget(overlayWidget);
+    // }, 2000);
 }
+
+let currentContentWidget: IContentWidget | null;
 
 function displayEditorErrorAtContent(editor: editor.IStandaloneCodeEditor, msg: string) {
 
@@ -300,21 +312,36 @@ function displayEditorErrorAtContent(editor: editor.IStandaloneCodeEditor, msg: 
             }
             return {
                 position: {lineNumber: 1, column: 1},
-                preference: [monaco.editor.ContentWidgetPositionPreference.EXACT]
+                preference: [monaco.editor.ContentWidgetPositionPreference.BELOW]
             }
         },
         getDomNode(): HTMLElement {
             const node = document.createElement('div');
             const span = document.createElement('span');
+            node.className = "uvl-tooltip";
+            span.className = "tooltip-text";
             span.textContent = msg;
             node.replaceChildren(span);
             return node;
         }
     }
+    if(currentContentWidget){
+        editor.removeContentWidget(currentContentWidget);
+    }
+    currentContentWidget = contentWidget;
     editor.addContentWidget(contentWidget);
-    setTimeout(() => {
-        editor.removeContentWidget(contentWidget);
-    }, 2000);
+
+    debouceRemoveWidget(editor);
+}
+
+const debouceRemoveWidget = lodash.debounce(removeWidget, 2000);
+
+function removeWidget(editor: IStandaloneCodeEditor) {
+    console.log("Editor: ", editor);
+    if(currentContentWidget){
+        editor.removeContentWidget(currentContentWidget);
+    }
+    currentContentWidget = null;
 }
 
 function aggregateCharacters(model: editor.ITextModel): number {

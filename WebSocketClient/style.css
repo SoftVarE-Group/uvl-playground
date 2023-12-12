@@ -77,6 +77,17 @@ h1 {
   max-width: 100%;
   height:80vh;
   border:1px solid grey;
+
+  & .uvl-tooltip {
+    width: max-content;
+    background-color: #2e2e2e;
+    border: 1px solid black;
+
+    & .tooltip-text {
+      color: #bb0000;
+      margin: 10px;
+    }
+  }
 }
 
 p {
