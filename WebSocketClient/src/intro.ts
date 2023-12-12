@@ -30,6 +30,9 @@ export const initIntroJS = () => {
       });
 
     button?.addEventListener("click", () => {
+        intro.setOption("exitOnOverlayClick", false);
+        intro.setOption("overlayOpacity", 0);
+        intro.setOption("disableInteraction", true);
         intro.start();
     });
 
