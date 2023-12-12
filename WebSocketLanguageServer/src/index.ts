@@ -13,6 +13,8 @@ import { createConnection, createServerProcess, forward } from 'vscode-ws-jsonrp
 import { Message, InitializeRequest, InitializeParams } from 'vscode-languageserver';
 import config from './config.js';
 
+const MAX_MESSAGE_SIZE = 11000;
+
 const launchLanguageServer = (socket: IWebSocket) => {
     const serverName: string = 'UVLS';
     const ls = config.languageServerBinary;
@@ -22,20 +24,31 @@ const launchLanguageServer = (socket: IWebSocket) => {
     const writer = new WebSocketMessageWriter(socket);
     const socketConnection = createConnection(reader, writer, () => socket.dispose());
     if (serverConnection) {
+        
         forward(socketConnection, serverConnection, message => {
+            if(JSON.stringify(message).length > MAX_MESSAGE_SIZE){
+                console.log(`blocked message larger than ${MAX_MESSAGE_SIZE}`);
+                message = {jsonrpc: "2.0"};
+                socketConnection.dispose();
+                return message;
+            }
             if (Message.isRequest(message)) {
                 console.log(`${serverName} Server received:`);
-                console.log(message);
+                logObjectRecursively(message);
                 if (message.method === InitializeRequest.type.method) {
                     const initializeParams = message.params as InitializeParams;
                     initializeParams.processId = process.pid;
                 }
             }
-            if (Message.isResponse(message)) {
-                console.log(`${serverName} Server sent:`);
+            if(Message.isNotification(message)){
                 logObjectRecursively(message);
             }
+            if (Message.isResponse(message)) {
+                console.log(`${serverName} Server sent:`);
+                logObjectRecursively(JSON.stringify(message));
+            }
             return message;
+            
         });
     }
 };
