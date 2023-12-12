@@ -60,13 +60,17 @@ const createUrl = (hostname: string, port: number, path: string, searchParams: R
 
 const createWebSocket = (url: string): WebSocket => {
     const webSocket = new WebSocket(url);
+    
     webSocket.onerror = () => {
         if(connectionText){
             displayEditorError( "Could not connect to language server. Reconnecting ...");
         }
+        if(languageClient !== undefined && languageClient.isRunning()){
+            //languageClient.dispose();
+        }
         setTimeout(() => {
             createWebSocket(url);
-        }, 1000);
+        }, 500);
     };
     webSocket.onopen = () => {
         if(connectionText){
@@ -82,15 +86,24 @@ const createWebSocket = (url: string): WebSocket => {
 
         languageClient.start();
         reader.onClose(() => {
-            languageClient.stop();
-            createWebSocket(url);
+            if(languageClient !== undefined && languageClient.isRunning()){
+                //languageClient.dispose();
+            }
+            setTimeout(() => {
+                createWebSocket(url);
+            }, 500);
         });
     };
+    /*
     webSocket.onclose = () => {
+        if(languageClient !== undefined && languageClient.isRunning()){
+            languageClient.dispose();
+        }
         setTimeout(() => {
             createWebSocket(url);
         }, 500);
     }
+    */
     return webSocket;
 };
 
