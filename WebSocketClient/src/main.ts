@@ -27,6 +27,9 @@ import { ExecuteCommandRequest } from 'vscode-languageserver-protocol'
 
 import { buildWorkerDefinition } from 'monaco-editor-workers';
 import {editor} from "monaco-editor";
+import IOverlayWidget = editor.IOverlayWidget;
+import IEditor = editor.IEditor;
+import IContentWidget = editor.IContentWidget;
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
 const languageId = 'uvls';
@@ -34,8 +37,8 @@ let languageClient: MonacoLanguageClient;
 let fileID;
 let model;
 const connectionText = document.getElementById("connection");
-const MAX_NUMBER_LINES = 100;
-const MAX_NUMBER_CHARACTERS = 10000;
+const MAX_NUMBER_LINES = 10;
+const MAX_NUMBER_CHARACTERS = 100;
 
 const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
@@ -243,26 +246,76 @@ export const startPythonClient = async () => {
         if(lineCount  && lineCount > MAX_NUMBER_LINES){
             vscode.commands.executeCommand("undo");
             if(connectionText){
-                connectionText.textContent = `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`
-                setTimeout(() => {
-                    connectionText.textContent = "";
-                }, 2000);
+                displayEditorError(editor, `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`);
             }
         }
         else if (aggregateCharacters(model) > MAX_NUMBER_CHARACTERS){
             vscode.commands.executeCommand("undo");
             if(connectionText){
-                connectionText.textContent = `The Editor only allows content up to ${MAX_NUMBER_CHARACTERS} Characters!`
-                setTimeout(() => {
-                    connectionText.textContent = "";
-                }, 2000);
+                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${MAX_NUMBER_CHARACTERS} Characters!`);
             }
         }
         debouncedSave();
     })
-
     const debouncedSave = lodash.debounce(saveFm, 1000);
 };
+
+function displayEditorError(editor: editor.IStandaloneCodeEditor, msg: string) {
+    const overlayWidget: IOverlayWidget = {
+        getId(): string {
+            return 'myCustomWidget';
+        },
+        getPosition(): editor.IOverlayWidgetPosition | null {
+            return {
+                preference: monaco.editor.OverlayWidgetPositionPreference.TOP_CENTER
+            }
+        },
+        getDomNode(): HTMLElement {
+            const node = document.createElement('div');
+            const span = document.createElement('span');
+            span.textContent = msg;
+            node.replaceChildren(span);
+            return node;
+        }
+    }
+    editor.addOverlayWidget(overlayWidget);
+    setTimeout(() => {
+        editor.removeOverlayWidget(overlayWidget);
+    }, 2000);
+}
+
+function displayEditorErrorAtContent(editor: editor.IStandaloneCodeEditor, msg: string) {
+
+    const selection = editor.getSelection();
+    const contentWidget: IContentWidget = {
+        getId(): string {
+            return 'myCustomWidget';
+        },
+        getPosition(): editor.IContentWidgetPosition | null {
+            if(selection){
+                return {
+                    position: selection.getStartPosition(),
+                    preference: [monaco.editor.ContentWidgetPositionPreference.BELOW]
+                }
+            }
+            return {
+                position: {lineNumber: 1, column: 1},
+                preference: [monaco.editor.ContentWidgetPositionPreference.EXACT]
+            }
+        },
+        getDomNode(): HTMLElement {
+            const node = document.createElement('div');
+            const span = document.createElement('span');
+            span.textContent = msg;
+            node.replaceChildren(span);
+            return node;
+        }
+    }
+    editor.addContentWidget(contentWidget);
+    setTimeout(() => {
+        editor.removeContentWidget(contentWidget);
+    }, 2000);
+}
 
 function aggregateCharacters(model: editor.ITextModel): number {
     let addReducer = (previousValue: number, currentValue: string) => {return previousValue + currentValue.length};
