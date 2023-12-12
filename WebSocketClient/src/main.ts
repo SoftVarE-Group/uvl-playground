@@ -85,6 +85,11 @@ const createWebSocket = (url: string): WebSocket => {
             createWebSocket(url);
         });
     };
+    webSocket.onclose = () => {
+        setTimeout(() => {
+            createWebSocket(url);
+        }, 500);
+    }
     return webSocket;
 };
 
