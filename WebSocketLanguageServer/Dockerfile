@@ -3,7 +3,8 @@ FROM node:18
 WORKDIR /usr/src/app
 
 RUN apt-get update
-RUN apt-get install z3
+RUN apt-get install -y z3
+RUN apt-get clean
 
 COPY package*.json ./
 
