@@ -1,10 +1,7 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) 2018-2022 TypeFox GmbH (http://www.typefox.io). All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
 import * as monaco from 'monaco-editor';
+import {editor} from 'monaco-editor';
 import * as vscode from 'vscode';
+import {LogLevel, Uri} from 'vscode';
 import {whenReady} from '@codingame/monaco-vscode-theme-defaults-default-extension';
 import '@codingame/monaco-vscode-python-default-extension';
 import {createConfiguredEditor, createModelReference} from 'vscode/monaco';
@@ -17,13 +14,12 @@ import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-over
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override';
 import {initServices, MonacoLanguageClient} from 'monaco-languageclient';
 import {CloseAction, ErrorAction, MessageTransports} from 'vscode-languageclient';
-import {WebSocketMessageReader, WebSocketMessageWriter, toSocket} from 'vscode-ws-jsonrpc';
+import {toSocket, WebSocketMessageReader, WebSocketMessageWriter} from 'vscode-ws-jsonrpc';
 import {
     RegisteredFileSystemProvider,
-    registerFileSystemOverlay,
-    RegisteredMemoryFile
+    RegisteredMemoryFile,
+    registerFileSystemOverlay
 } from 'vscode/service-override/files';
-import {LogLevel, Uri} from 'vscode';
 import config from './config.js';
 import {instance} from "@viz-js/viz";
 import {Message} from 'vscode-jsonrpc';
@@ -33,7 +29,6 @@ import {ExecuteCommandRequest} from 'vscode-languageserver-protocol'
 
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
-import {editor} from "monaco-editor";
 import IOverlayWidget = editor.IOverlayWidget;
 import IContentWidget = editor.IContentWidget;
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
@@ -47,21 +42,11 @@ let model;
 const connectionText = document.getElementById("connection");
 let debounceGenGraph;
 let updateGraph = false;
-const MAX_NUMBER_LINES = 100;
-const MAX_NUMBER_CHARACTERS = 10000;
 
-const createUrl = (hostname: string, port: number, path: string, searchParams: Record<string, any> = {}, secure: boolean): string => {
+const createUrl = (hostname: string, port: number, path: string, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
     const url = new URL(`${protocol}://${hostname}:${port}${path}`);
 
-    for (let [key, value] of Object.entries(searchParams)) {
-        if (value instanceof Array) {
-            value = value.join(',');
-        }
-        if (value) {
-            url.searchParams.set(key, value);
-        }
-    }
     return url.toString();
 };
 
@@ -200,7 +185,7 @@ function createDiagramFromDot(res: string): void {
     });
 }
 
-export const startPythonClient = async () => {
+export const startUvlClient = async () => {
     // init vscode-api
     const useDebugLogging = config.debug ? LogLevel.Debug : LogLevel.Off;
     await initServices({
@@ -236,12 +221,7 @@ export const startPythonClient = async () => {
     registerFileSystemOverlay(1, fileSystemProvider);
 
     // create the web socket and configure to start the language client on open, can add extra parameters to the url if needed.
-    createWebSocket(createUrl(config.languageServerHostName, config.port, '/', {
-        // Used to parse an auth token or additional parameters such as import IDs to the language server
-        authorization: 'UserAuth'
-        // By commenting above line out and commenting below line in, connection to language server will be denied.
-        // authorization: 'FailedUserAuth'
-    }, location.protocol === 'https:'));
+    createWebSocket(createUrl(config.languageServerHostName, config.port, '/', location.protocol === 'https:'));
 
 
     // use the file create before
@@ -263,24 +243,24 @@ export const startPythonClient = async () => {
         const lineCount = model?.getLineCount();
         let numberLines = aggregateCharacters(model);
 
-        if (lineCount && lineCount > MAX_NUMBER_LINES) {
-            if (lineCount > MAX_NUMBER_LINES + 1) {
+        if (lineCount && lineCount > config.MAX_NUMBER_LINES) {
+            if (lineCount > config.MAX_NUMBER_LINES + 1) {
                 vscode.commands.executeCommand("undo");
             } else {
                 vscode.commands.executeCommand("deleteLeft");
             }
             if (connectionText) {
-                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${MAX_NUMBER_LINES} Lines!`);
+                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
             }
-        } else if (numberLines > MAX_NUMBER_CHARACTERS ) {
-            if (numberLines > MAX_NUMBER_CHARACTERS + 1) {
+        } else if (numberLines > config.MAX_NUMBER_LINES) {
+            if (numberLines > config.MAX_NUMBER_LINES + 1) {
                 vscode.commands.executeCommand("undo");
             }
             else {
                 vscode.commands.executeCommand("deleteLeft");
             }
             if (connectionText) {
-                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${MAX_NUMBER_CHARACTERS} Characters!`);
+                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${config.MAX_NUMBER_LINES} Characters!`);
             }
         }
         debouncedSave();
@@ -381,8 +361,7 @@ function aggregateCharacters(model: editor.ITextModel): number {
     let addReducer = (previousValue: number, currentValue: string) => {
         return previousValue + currentValue.length
     };
-    const characters: number = model?.getLinesContent().reduce(addReducer, 0);
-    return characters;
+    return model?.getLinesContent().reduce(addReducer, 0);
 }
 
 function getInitialFm() {
