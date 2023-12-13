@@ -146,9 +146,9 @@ a:active {
     position: fixed;
     top: 10px;
     right: 10px;
-    background-color: #bdc3c7; /* Light gray color for dark mode */
-    color: #34495e; /* Dark text color for dark mode */
-    border: none;
+    background-color: #1e1e1e; /* Light gray color for dark mode */
+    color: white; /* Dark text color for dark mode */
+    border: 2px solid #fff;
     border-radius: 50%;
     padding: 10px;
    
@@ -168,4 +168,36 @@ a:active {
 
   .tutorial-button:hover {
     background-color: #95a5a6; /* Darker gray on hover for dark mode */
+  }
+
+  .uvl-tutorial-button {
+    position: fixed;
+    top: 10px;
+    right: 60px;
+    background-color: #1e1e1e; /* Light gray color for dark mode */
+    color: white; /* Dark text color for dark mode */
+    border: 2px solid #fff;
+    border-radius: 50%;
+    padding: 10px;
+   
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+    width: 20px; /* Adjust the size as needed */
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .uvl-tutorial-button-text {
+    font-size: 20px;
+  }
+
+  .uvl-tutorial-button:hover {
+    background-color: #95a5a6; /* Darker gray on hover for dark mode */
+  }
+
+  .tutorial {
+    color: white;
   }

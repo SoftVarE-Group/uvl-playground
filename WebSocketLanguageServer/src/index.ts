@@ -45,7 +45,7 @@ const launchLanguageServer = (socket: IWebSocket) => {
             }
             if (Message.isResponse(message)) {
                 console.log(`${serverName} Server sent:`);
-                logObjectRecursively(JSON.stringify(message));
+                logObjectRecursively(message);
             }
             return message;
             

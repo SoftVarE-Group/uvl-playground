@@ -14,6 +14,7 @@
     <h1>UVL Playground</h1>
     <h2 id="connection" style="color: red;"></h2>
 </div>
+<div class="uvl-tutorial-button" id="uvl-tutorialButton"><div class="uvl-tutorial-button-text">?</div></div>
 <div class="tutorial-button" id="tutorialButton"><div class="tutorial-button-text">?</div></div>
 <div>
     <dialog id="dialog">
@@ -31,18 +32,19 @@
         </p>
     </dialog>
 </div>
-<div class="splitter">
-    <div id="first">
-        <div id="container" class="editor"></div>
-    </div>
-    <div id="separator"></div>
-
-    <div id="second">
-        <div class="graph"></div>
-
-
+<div id="main-div" style="display: flex;">
+    <div class="splitter">
+        <div id="first">
+            <div id="container" class="editor"></div>
+        </div>
+        <div id="separator"></div>
+    
+        <div id="second">
+            <div class="graph"></div>
+        </div>
     </div>
 </div>
+
 
 <div class="footer">
     <p>The Universal Variability Language (UVL) is a community effort towards a widely adopted textual specification
@@ -104,6 +106,109 @@
 
 
     dragElement(document.getElementById("separator"), "H");
+</script>
+<script>
+    const tutorialContent = [
+        {title: "Welcome!", text: "Welcome to the UVL Tutorial. All code listings will automatically be placed in the editor on the left. Click 'Next' to start the tutorial."},
+        {title: "Basic Feature Model!", text: "Start with the 'features' key word to start enumerating your features. Indentations matter in UVL and represent the tree structure.", codeListing: "features\n\tfeature1\n\tfeature2"},
+        {title: "Feature Groups", text: "You can use 'alternative', 'mandatory', 'optional', and 'or', to create groups.", codeListing: "features\n\tfeature1\n\tfeature2"}
+    ]
+    let tutorialToogle = false;
+    var uvlTutorialButton = document.getElementById("uvl-tutorialButton");
+    uvlTutorialButton.addEventListener('click', function() {
+        let tutorialPageCounter = 0;
+        tutorialToogle = !tutorialToogle;
+        let mainDiv = document.getElementById("main-div");
+        let splitter = document.getElementsByClassName("splitter")[0];
+        if(tutorialToogle){
+            splitter.style.width = "75%";
+            setTutorialPage(mainDiv, tutorialPageCounter);
+        }else{
+            splitter.style.width = "100%";
+            let newDiv = document.getElementById("uvl-tutorial-div");
+            mainDiv.removeChild(newDiv);
+        }
+    });
+
+    function setTutorialPage(mainDiv, pageNumber){
+        let tutorialDiv = document.getElementById("uvl-tutorial-div");
+        if(tutorialDiv !== null){
+            mainDiv.removeChild(tutorialDiv);
+        }
+        tutorialDiv = getTutorialPage(mainDiv, pageNumber);
+        mainDiv.appendChild(tutorialDiv);
+    }
+
+    function getTutorialPage(mainDiv, pageNumber){
+        const content = tutorialContent[pageNumber];
+        let newDiv = document.createElement('div');
+        newDiv.id = "uvl-tutorial-div";
+        newDiv.style.color = "white";
+        newDiv.style.position = "relative";
+        newDiv.style.width = "100%";
+        let headline = document.createElement('h2');
+        headline.textContent = content.title;
+        let text = document.createElement('div');
+        text.textContent = content.text;
+        
+        let navigationContainer = document.createElement('div');
+        navigationContainer.style.position = "absolute";
+        navigationContainer.style.bottom = 0;
+        navigationContainer.style.display = "flex";
+        navigationContainer.style.justifyContent = "space-between";
+        navigationContainer.style.width = "90%";
+        navigationContainer.style.padding = "10px";
+        let backButton = document.createElement('div');
+        if(pageNumber > 0){
+            backButton = document.createElement('button');
+            backButton.textContent = "Back";
+            backButton.style.backgroundColor = "#1e1e1e";
+            backButton.style.color = "#fff";
+            backButton.style.border= "2px solid 'fff";
+            backButton.style.borderRadius = "10%";
+            backButton.style.padding = "10px 20px";
+            backButton.style.cursor = "pointer";
+            backButton.style.fontSize = "16px";
+            backButton.onclick = () => {
+                setTutorialPage(mainDiv, pageNumber - 1);
+            } 
+        }
+        navigationContainer.appendChild(backButton);
+        let nextButton = document.createElement('button');        
+        nextButton.style.backgroundColor = "#1e1e1e";
+        nextButton.style.color = "#fff";
+        nextButton.style.border= "2px solid 'fff";
+        nextButton.style.borderRadius = "10%";
+        nextButton.style.padding = "10px 20px";
+        nextButton.style.cursor = "pointer";
+        nextButton.style.fontSize = "16px";
+        if(pageNumber < tutorialContent.length - 1){
+            nextButton.textContent = "Next";
+            nextButton.onclick = () => {
+                setTutorialPage(mainDiv, pageNumber + 1);
+            } 
+        }else{
+            nextButton.textContent = "Done";
+            nextButton.onclick = () => {
+                let splitter = document.getElementsByClassName("splitter")[0];
+                splitter.style.width = "100%";
+                let newDiv = document.getElementById("uvl-tutorial-div");
+                mainDiv.removeChild(newDiv);
+                tutorialToogle = !tutorialToogle;
+            } 
+        }
+        navigationContainer.appendChild(nextButton);
+        
+        newDiv.appendChild(headline);
+        newDiv.appendChild(text);
+        newDiv.appendChild(navigationContainer);
+        const editor = window.editor;
+        if(editor && content.codeListing !== undefined){
+            editor.setValue(content.codeListing);
+        }
+        return newDiv;
+    }
+    
 </script>
 </body>
 </html>

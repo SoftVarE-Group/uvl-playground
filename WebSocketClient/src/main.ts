@@ -253,6 +253,7 @@ export const startPythonClient = async () => {
     const editor = createConfiguredEditor(document.getElementById('container')!, {
         model: modelRef.object.textEditorModel, automaticLayout: true
     });
+    window["editor"] = editor;
 
     editor.onDidChangeModelContent(() => {
         const model = editor.getModel();
