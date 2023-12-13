@@ -241,7 +241,7 @@ export const startUvlClient = async () => {
             return;
         }
         const lineCount = model?.getLineCount();
-        let numberLines = aggregateCharacters(model);
+        let numberCharacters = aggregateCharacters(model);
 
         if (lineCount && lineCount > config.MAX_NUMBER_LINES) {
             if (lineCount > config.MAX_NUMBER_LINES + 1) {
@@ -252,15 +252,15 @@ export const startUvlClient = async () => {
             if (connectionText) {
                 displayEditorErrorAtContent(editor, `The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
             }
-        } else if (numberLines > config.MAX_NUMBER_LINES) {
-            if (numberLines > config.MAX_NUMBER_LINES + 1) {
+        } else if (numberCharacters > config.MAX_NUMBER_CHARACTERS) {
+            if (numberCharacters > config.MAX_NUMBER_CHARACTERS + 1) {
                 vscode.commands.executeCommand("undo");
             }
             else {
                 vscode.commands.executeCommand("deleteLeft");
             }
             if (connectionText) {
-                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${config.MAX_NUMBER_LINES} Characters!`);
+                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters!`);
             }
         }
         debouncedSave();
