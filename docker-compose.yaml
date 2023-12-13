@@ -4,23 +4,20 @@ services:
   traefik:
     image: traefik:v3.0
     ports:
-      - 80:80
-      - 443:443
-      - 30000:30000
-      - 3000:3000
+      - "80:80"
+      - "443:443"
+      - "30000:30000"
+      - "3000:3000"
     networks:
       - proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt
-      #- /var/log:/var/log
     command:
       - --api.dashboard=true
       - --api.insecure=true
       - --log.level=DEBUG
-      #- --log.filepath=/var/log/traefik.log
       - --accesslog=true
-      #- --accesslog.filepath=/var/log/traefik-access.log
       - --providers.docker.network=proxy
       - --providers.docker.exposedByDefault=false
       - --entrypoints.web.address=:80
@@ -37,11 +34,11 @@ services:
       - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
       - --certificatesResolvers.myresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`) && (PathPrefix(`/dashboard/`) || PathPrefix(`/api`))
-      - traefik.http.routers.mydashboard.service=api@internal
-      - traefik.http.routers.mydashboard.middlewares=myauth
-      - traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/
+      - "traefik.enable=true"
+      - "traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`) && (PathPrefix(`/dashboard/`) || PathPrefix(`/api`))"
+      - "traefik.http.routers.mydashboard.service=api@internal"
+      - "traefik.http.routers.mydashboard.middlewares=myauth"
+      - "traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
 
   webserver:
     build:
@@ -56,8 +53,8 @@ services:
       - "traefik.http.services.webserver.loadbalancer.server.port=80"
       
       - traefik.http.middlewares.mywwwredirect.redirectregex.regex=^https://www\.(.*)
-      - traefik.http.middlewares.mywwwredirect.redirectregex.replacement=https://$${1}
-      - traefik.http.routers.webserver.middlewares=mywwwredirect
+      - "traefik.http.middlewares.mywwwredirect.redirectregex.replacement=https://$${1}"
+      - "traefik.http.routers.webserver.middlewares=mywwwredirect"
       
   languageserver:
     build:
