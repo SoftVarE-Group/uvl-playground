@@ -1,5 +1,7 @@
 import {editor} from "monaco-editor";
 import {tutorialContent} from "../assets/uvlTutorialContent.ts";
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 
 export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
     let tutorialToogle = false;
@@ -78,9 +80,18 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         newDiv.appendChild(text);
         newDiv.appendChild(navigationContainer);
         if (content.codeListing !== undefined) {
-            editor.setValue(content.codeListing);
+            changeEditorContent(editor, content.codeListing);
         }
         return newDiv;
+    }
+
+    function changeEditorContent(editor: IStandaloneCodeEditor, newContent: string){
+        const opsModel = editor.getModel();
+        if (opsModel) {
+            const fullModelRange = opsModel.getFullModelRange();
+            const operation: IIdentifiedSingleEditOperation = {text: newContent, range: fullModelRange};
+            opsModel.applyEdits([operation], false);
+        }
     }
 }
 
