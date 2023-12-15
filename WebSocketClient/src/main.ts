@@ -30,9 +30,7 @@ import initUvlTutorial from './uvlTutorial.ts';
 
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
-import IOverlayWidget = editor.IOverlayWidget;
-import IContentWidget = editor.IContentWidget;
-import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import {ExecuteCommandSignature} from "./node_modules/vscode-languageclient";
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
@@ -40,7 +38,6 @@ const languageId = 'uvls';
 let languageClient: MonacoLanguageClient;
 let fileID;
 let model;
-let debounceGenGraph;
 let updateGraph = false;
 
 const createUrl = (hostname: string, port: number, path: string, secure: boolean): string => {
@@ -78,13 +75,65 @@ const createWebSocket = (url: string): WebSocket => {
     return webSocket;
 };
 
+function onExecuteCommand(command: string, args: any[], client: MonacoLanguageClient, next: ExecuteCommandSignature) {
+    const information = {command: command, arguments: args};
+    console.log("command: " + command);
+    console.log("args: " + args);
+    debounceGenGraph = lodash.debounce(() => {
+        client?.sendRequest(ExecuteCommandRequest.type, {command: "uvls/generate_diagram", arguments: [`file:///workspace/${fileID}.uvl`]}).then((res) => {
+            createDiagramFromDot(res as string);
+        });
+    }, 500);
+    if (command === "uvls/open_config") {
+        const dialog: HTMLDialogElement | null = document.querySelector("#dialog")
+        const modalClose: HTMLButtonElement | null = document.querySelector('#modalClose');
+        if (modalClose) {
+            modalClose.onclick = () => dialog?.close();
+        }
+        //we do not support config view
+        dialog?.showModal();
+        return;
+    } else if (command === "uvls/generate_diagram") {
+        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
+            createDiagramFromDot(res as string);
+        });
+
+        if (!updateGraph) {
+            updateGraph = true;
+
+            const firstPane = document.getElementById("first");
+            const secondPane = document.getElementById("second");
+            if (firstPane && secondPane) {
+                firstPane.style.width = "50%";
+                secondPane.style.width = "50%";
+            }
+
+        } else {
+            updateGraph = false;
+            const div = document.getElementsByClassName("graph");
+            const firstPane = document.getElementById("first");
+            while (div[0].firstChild) {
+                div[0].removeChild(div[0].firstChild);
+            }
+            const secondPane = document.getElementById("second");
+            if (firstPane && secondPane) {
+                firstPane.style.width = "100%";
+                secondPane.style.width = "0%";
+            }
+        }
+
+    } else {
+        next(command, args);
+    }
+}
+
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
     const client = new MonacoLanguageClient({
         name: 'UVL Language Client', clientOptions: {
             // use a language id as a document selector
             documentSelector: [languageId], // disable the default error handler
             errorHandler: {
-                error: () => ({action: ErrorAction.Continue}), closed: () => ({action: CloseAction.DoNotRestart})
+                error: () => ({action: ErrorAction.Continue}), closed: () => ({action: CloseAction.Restart})
             }, // pyright requires a workspace folder to be present, otherwise it will not work
             workspaceFolder: {
                 index: 0, name: 'workspace', uri: monaco.Uri.parse('/workspace')
@@ -108,56 +157,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             }, // The Middleware allows us to intercept all messages that would be sent to the language server
             middleware: {
                 executeCommand(command, args, next) {
-                    const information = {command: command, arguments: args};
-                    debounceGenGraph = lodash.debounce(() => {
-                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
-                            createDiagramFromDot(res as string);
-                        });
-                    }, 500);
-                    console.log("command: " + command);
-                    console.log("args: " + args);
-
-                    if (command === "uvls/open_config") {
-                        const dialog: HTMLDialogElement | null = document.querySelector("#dialog")
-                        const modalClose: HTMLButtonElement | null = document.querySelector('#modalClose');
-                        if (modalClose) {
-                            modalClose.onclick = () => dialog?.close();
-                        }
-                        dialog?.showModal();
-                        //we do not support config view
-                        return;
-                    } else if (command === "uvls/generate_diagram") {
-                        client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
-                            createDiagramFromDot(res as string);
-                        });
-
-                        if (!updateGraph) {
-                            updateGraph = true;
-
-                            const firstPane = document.getElementById("first");
-                            const secondPane = document.getElementById("second");
-                            if (firstPane && secondPane) {
-                                firstPane.style.width = "50%";
-                                secondPane.style.width = "50%";
-                            }
-
-                        } else {
-                            updateGraph = false;
-                            const div = document.getElementsByClassName("graph");
-                            const firstPane = document.getElementById("first");
-                            while (div[0].firstChild) {
-                                div[0].removeChild(div[0].firstChild);
-                            }
-                            const secondPane = document.getElementById("second");
-                            if (firstPane && secondPane) {
-                                firstPane.style.width = "100%";
-                                secondPane.style.width = "0%";
-                            }
-                        }
-
-                    } else {
-                        next(command, args);
-                    }
+                    onExecuteCommand(command, args, client, next);
                 },
             }
         }, // create a language client connection from the JSON RPC connection on demand
@@ -234,18 +234,16 @@ export const startUvlClient = async () => {
         if (!model) {
             return;
         }
-        const lineCount = model?.getLineCount();
+        const lineCount = model.getLineCount();
         let numberCharacters = aggregateCharacters(model);
 
-        if (lineCount && lineCount > config.MAX_NUMBER_LINES) {
+        if (lineCount > config.MAX_NUMBER_LINES) {
             if (lineCount > config.MAX_NUMBER_LINES + 1) {
                 vscode.commands.executeCommand("undo");
             } else {
                 vscode.commands.executeCommand("deleteLeft");
             }
-            if (connectionText) {
-                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
-            }
+            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
         } else if (numberCharacters > config.MAX_NUMBER_CHARACTERS) {
             if (numberCharacters > config.MAX_NUMBER_CHARACTERS + 1) {
                 vscode.commands.executeCommand("undo");
@@ -253,9 +251,7 @@ export const startUvlClient = async () => {
             else {
                 vscode.commands.executeCommand("deleteLeft");
             }
-            if (connectionText) {
-                displayEditorErrorAtContent(editor, `The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters!`);
-            }
+            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters!`);
         }
         debouncedSave();
         if (updateGraph && debounceGenGraph !== undefined) {
@@ -270,16 +266,21 @@ export const startUvlClient = async () => {
     globalEditor = editor;
 };
 
-let globalEditor: IStandaloneCodeEditor | null;
-let currentWidget: IOverlayWidget | null;
+let debounceGenGraph = lodash.debounce(() => {
+    languageClient?.sendRequest(ExecuteCommandRequest.type, {command: "uvls/generate_diagram", arguments: [`file:///workspace/${fileID}.uvl`]}).then((res) => {
+        createDiagramFromDot(res as string);
+    });
+}, 500);
+
+let globalEditor: editor.IStandaloneCodeEditor | null;
+let currentWidget: editor.IOverlayWidget | null;
 
 
 function displayEditorError(msg: string) {
-    console.log(globalEditor);
     if (!globalEditor) {
         return;
     }
-    const overlayWidget: IOverlayWidget = {
+    const overlayWidget: editor.IOverlayWidget = {
         getId(): string {
             return 'myCustomWidget';
         }, getPosition(): editor.IOverlayWidgetPosition | null {
@@ -300,18 +301,16 @@ function displayEditorError(msg: string) {
     }
     currentWidget = overlayWidget;
     globalEditor.addOverlayWidget(overlayWidget);
-    // setTimeout(() => {
-    //     if(!globalEditor) return;
-    //     globalEditor.removeOverlayWidget(overlayWidget);
-    // }, 2000);
 }
 
-let currentContentWidget: IContentWidget | null;
+let currentContentWidget: editor.IContentWidget | null;
 
-function displayEditorErrorAtContent(editor: editor.IStandaloneCodeEditor, msg: string) {
-
-    const selection = editor.getSelection();
-    const contentWidget: IContentWidget = {
+function displayEditorErrorAtContent(msg: string) {
+    if(!globalEditor){
+        return;
+    }
+    const selection = globalEditor.getSelection();
+    const contentWidget: editor.IContentWidget = {
         getId(): string {
             return 'myCustomWidget';
         }, getPosition(): editor.IContentWidgetPosition | null {
@@ -334,21 +333,18 @@ function displayEditorErrorAtContent(editor: editor.IStandaloneCodeEditor, msg: 
             return node;
         }
     }
-    if (currentContentWidget) {
-        editor.removeContentWidget(currentContentWidget);
-    }
+    removeWidget();
     currentContentWidget = contentWidget;
-    editor.addContentWidget(contentWidget);
+    globalEditor.addContentWidget(contentWidget);
 
     debouceRemoveWidget(editor);
 }
 
 const debouceRemoveWidget = lodash.debounce(removeWidget, 2000);
 
-function removeWidget(editor: IStandaloneCodeEditor) {
-    console.log("Editor: ", editor);
+function removeWidget() {
     if (currentContentWidget) {
-        editor.removeContentWidget(currentContentWidget);
+        globalEditor?.removeContentWidget(currentContentWidget);
     }
     currentContentWidget = null;
 }
