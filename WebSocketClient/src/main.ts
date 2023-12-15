@@ -40,14 +40,12 @@ const languageId = 'uvls';
 let languageClient: MonacoLanguageClient;
 let fileID;
 let model;
-const connectionText = document.getElementById("connection");
 let debounceGenGraph;
 let updateGraph = false;
 
 const createUrl = (hostname: string, port: number, path: string, secure: boolean): string => {
     const protocol = secure ? 'wss' : 'ws';
     const url = new URL(`${protocol}://${hostname}:${port}${path}`);
-
     return url.toString();
 };
 
@@ -55,17 +53,13 @@ const createWebSocket = (url: string): WebSocket => {
     const webSocket = new WebSocket(url);
     
     webSocket.onerror = () => {
-        if (connectionText) {
-            displayEditorError("Could not connect to language server. Reconnecting ...");
-        }
+        displayEditorError("Could not connect to language server. Reconnecting ...");
         setTimeout(() => {
             createWebSocket(url);
         }, 500);
     };
     webSocket.onopen = () => {
-        if (connectionText) {
-            displayEditorError("");
-        }
+        displayEditorError("");
         const socket = toSocket(webSocket);
         const reader = new WebSocketMessageReader(socket);
         const writer = new WebSocketMessageWriter(socket);
@@ -281,6 +275,7 @@ let currentWidget: IOverlayWidget | null;
 
 
 function displayEditorError(msg: string) {
+    console.log(globalEditor);
     if (!globalEditor) {
         return;
     }
@@ -295,7 +290,7 @@ function displayEditorError(msg: string) {
             const node = document.createElement('div');
             const span = document.createElement('span');
             span.textContent = msg;
-            span.className = "top-error";
+            span.className = "error";
             node.replaceChildren(span);
             return node;
         }

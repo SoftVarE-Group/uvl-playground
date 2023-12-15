@@ -9,6 +9,10 @@ body {
     background-color: #1e1e1e; /* Dark background color */
 }
 
+.error {
+    color: red;
+}
+
 .container {
     display: flex;
     width: 50%;
