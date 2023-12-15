@@ -1,7 +1,7 @@
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import * as vscode from 'vscode';
-import {LogLevel, Uri} from 'vscode';
+import {CodeAction, CodeLens, LogLevel, ProviderResult, Uri} from 'vscode';
 import {whenReady} from '@codingame/monaco-vscode-theme-defaults-default-extension';
 import '@codingame/monaco-vscode-python-default-extension';
 import {createConfiguredEditor, createModelReference} from 'vscode/monaco';
@@ -97,6 +97,7 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
         client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
             createDiagramFromDot(res as string);
         });
+        console.log("Generate Diagram");
 
         if (!updateGraph) {
             updateGraph = true;
@@ -120,6 +121,10 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
                 firstPane.style.width = "100%";
                 secondPane.style.width = "0%";
             }
+            client.sendRequest("textDocument/codeLens", {textDocument: {uri: `file:///workspace/${fileID}.uvl`}}).then((res) => {
+                console.log("It worked!!");
+                console.log("res");
+            })
         }
 
     } else {
@@ -147,8 +152,10 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                             // Filters requests send by uvls -> Anti-Pattern in our opinion
                         } else if (Message.isResponse(message)) {
                             // Filters responses send by uvls
+                            console.log("Fetched Response", message);
                         } else if (Message.isNotification(message)) {
                             // Filters Notification messages following json-rpc spec
+                            console.log("Fetched Notification", message);
                         }
                         // "next" is the default behaviour
                         next(message);
@@ -159,6 +166,24 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                 executeCommand(command, args, next) {
                     onExecuteCommand(command, args, client, next);
                 },
+                provideCodeLenses(document, token, next): ProviderResult<CodeLens[]> {
+                    console.log(document);
+                    console.log(token);
+                    console.log(next);
+                    const results = next(document, token);
+                    console.log(results);
+                    if(results instanceof Promise){
+                        console.log("results is promise");
+                        results.then((codeLenses: CodeLens[]) => {
+                            codeLenses.forEach((codeLens) => {
+                                if (codeLens.command?.title === "generate graph"){
+                                    codeLens.command.title = updateGraph ? "Hide Feature Model" : "Show Feature Model";
+                                }
+                            })
+                        })
+                    }
+                    return results;
+                }
             }
         }, // create a language client connection from the JSON RPC connection on demand
         connectionProvider: {
