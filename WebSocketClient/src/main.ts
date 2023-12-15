@@ -25,13 +25,15 @@ import {instance} from "@viz-js/viz";
 import {Message} from 'vscode-jsonrpc';
 import {v4 as uuidv4} from 'uuid';
 import lodash from 'lodash';
-import {ExecuteCommandRequest} from 'vscode-languageserver-protocol'
+import {ExecuteCommandRequest} from 'vscode-languageserver-protocol';
+import initUvlTutorial from './uvlTutorial.ts';
 
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
 import IOverlayWidget = editor.IOverlayWidget;
 import IContentWidget = editor.IContentWidget;
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
@@ -185,6 +187,23 @@ function createDiagramFromDot(res: string): void {
     });
 }
 
+function registerOperationButton(opsModel: editor.ITextModel | null) {
+    const wrapperDiv = document.querySelector('.header');
+    const activator = document.createElement('button');
+    activator.textContent = "Press me to change the editors content";
+    console.log(wrapperDiv);
+    if(wrapperDiv){
+        wrapperDiv.appendChild(activator);
+    }
+    activator.onclick = () => {
+        if (opsModel) {
+            const fullModelRange = opsModel.getFullModelRange();
+            const operation: IIdentifiedSingleEditOperation = {text: "features\n\tfeatureOne", range: fullModelRange};
+            opsModel.applyEdits([operation], false);
+        }
+    }
+}
+
 export const startUvlClient = async () => {
     // init vscode-api
     const useDebugLogging = config.debug ? LogLevel.Debug : LogLevel.Off;
@@ -270,9 +289,12 @@ export const startUvlClient = async () => {
     })
 
     initIntroJS();
+    initUvlTutorial(editor);
     const debouncedSave = lodash.debounce(saveFm, 1000);
 
     globalEditor = editor;
+    let opsModel = editor.getModel();
+    registerOperationButton(opsModel);
 };
 
 let globalEditor: IStandaloneCodeEditor | null;

@@ -85,6 +85,35 @@ body {
     }
 }
 
+#uvl-tutorial-div {
+    color: white;
+    position: relative;
+    width: 100%;
+
+    & .text {
+        line-height: 1.6;
+    }
+
+    & .navigationContainer {
+        position: absolute;
+        bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        width: 90%;
+        padding: 10px;
+    }
+
+    & button {
+        background-color: #1e1e1e;
+        color: #fff;
+        border: 2px solid #fff;
+        border-radius: 10%;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+}
+
 
 h1 {
     font-size: 30px;
@@ -93,24 +122,24 @@ h1 {
 }
 
 .editor {
-  background-color: #2d2d2d;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  min-width: 50%;
-  max-width: 100%;
-  height:80vh;
-  border:1px solid grey;
+    background-color: #2d2d2d;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    min-width: 50%;
+    max-width: 100%;
+    height: 80vh;
+    border: 1px solid grey;
 
-  & .uvl-tooltip {
-    width: max-content;
-    background-color: #2e2e2e;
-    border: 1px solid black;
+    & .uvl-tooltip {
+        width: max-content;
+        background-color: #2e2e2e;
+        border: 1px solid black;
 
-    & .tooltip-text {
-      color: #bb0000;
-      margin: 10px;
+        & .tooltip-text {
+            color: #bb0000;
+            margin: 10px;
+        }
     }
-  }
 }
 
 p {
@@ -151,7 +180,7 @@ a:active {
     border: 2px solid #fff;
     border-radius: 50%;
     padding: 10px;
-   
+
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
@@ -160,17 +189,17 @@ a:active {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
+}
 
-  .tutorial-button-text {
+.tutorial-button-text {
     font-size: 20px;
-  }
+}
 
-  .tutorial-button:hover {
+.tutorial-button:hover {
     background-color: #95a5a6; /* Darker gray on hover for dark mode */
-  }
+}
 
-  .uvl-tutorial-button {
+.uvl-tutorial-button {
     position: fixed;
     top: 10px;
     right: 60px;
@@ -179,7 +208,7 @@ a:active {
     border: 2px solid #fff;
     border-radius: 50%;
     padding: 10px;
-   
+
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
@@ -188,16 +217,16 @@ a:active {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
+}
 
-  .uvl-tutorial-button-text {
+.uvl-tutorial-button-text {
     font-size: 20px;
-  }
+}
 
-  .uvl-tutorial-button:hover {
+.uvl-tutorial-button:hover {
     background-color: #95a5a6; /* Darker gray on hover for dark mode */
-  }
+}
 
-  .tutorial {
+.tutorial {
     color: white;
-  }
+}
