@@ -33,6 +33,7 @@ import {initIntroJS} from "./intro.ts";
 import {ExecuteCommandSignature} from "./node_modules/vscode-languageclient";
 import ITextModel = editor.ITextModel;
 import {downloadFile} from "./ImportExportFiles.ts";
+import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
@@ -139,6 +140,28 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
     vscode.commands.registerCommand("uvlPlayground/uploadFile", () => {
         console.log("Someone wants to upload files");
+        const uploadDialog: HTMLDialogElement|null = document.querySelector('#uploadDialog');
+        const uploadClose: HTMLButtonElement|null = document.querySelector('#uploadClose');
+        const uploadInput: HTMLInputElement|null = document.querySelector('#uploadInput');
+        if(uploadDialog && uploadClose && uploadInput){
+            uploadClose.onclick = () => uploadDialog.close();
+            uploadDialog.showModal();
+            uploadInput.onchange = () => {
+                uploadDialog.close();
+                if(!uploadInput.files){
+                    return;
+                }
+                const file = uploadInput.files[0];
+                file.text().then((newContent) => {
+                    const opsModel = globalEditor?.getModel();
+                    if (opsModel) {
+                        const fullModelRange = opsModel.getFullModelRange();
+                        const operation: IIdentifiedSingleEditOperation = {text: newContent, range: fullModelRange};
+                        opsModel.applyEdits([operation], false);
+                    }
+                });
+            };
+        }
     });
     vscode.commands.registerCommand("uvlPlayground/downloadFile", () => {
         console.log("Someone wants to download files");

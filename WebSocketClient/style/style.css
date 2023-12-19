@@ -70,13 +70,13 @@ body {
     opacity: 0.75;
 }
 
-#dialog {
+dialog {
     background: #1e1e1e;
     color: white;
     width: 50vw;
     height: 70vh;
 
-    #gif_in_dialog {
+    & #gif_in_dialog {
         display: block;
         margin: 10px auto;
         max-width: 40vw;
