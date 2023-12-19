@@ -1,7 +1,7 @@
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import * as vscode from 'vscode';
-import {CodeAction, CodeLens, LogLevel, ProviderResult, Uri} from 'vscode';
+import {CodeAction, CodeLens, commands, LogLevel, ProviderResult, Uri} from 'vscode';
 import {whenReady} from '@codingame/monaco-vscode-theme-defaults-default-extension';
 import '@codingame/monaco-vscode-python-default-extension';
 import {createConfiguredEditor, createModelReference} from 'vscode/monaco';
@@ -13,7 +13,7 @@ import getKeybindingsServiceOverride from '@codingame/monaco-vscode-keybindings-
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override';
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override';
 import {initServices, MonacoLanguageClient} from 'monaco-languageclient';
-import {CloseAction, ErrorAction, MessageTransports} from 'vscode-languageclient';
+import {CloseAction, Command, ErrorAction, MessageTransports} from 'vscode-languageclient';
 import {toSocket, WebSocketMessageReader, WebSocketMessageWriter} from 'vscode-ws-jsonrpc';
 import {
     RegisteredFileSystemProvider,
@@ -31,6 +31,8 @@ import initUvlTutorial from './uvlTutorial.ts';
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
 import {ExecuteCommandSignature} from "./node_modules/vscode-languageclient";
+import ITextModel = editor.ITextModel;
+import {downloadFile} from "./ImportExportFiles.ts";
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
@@ -98,7 +100,9 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
             createDiagramFromDot(res as string);
         });
         console.log("Generate Diagram");
-
+        model.setLanguageId("blablibub");
+        model.setLanguageId(languageId);
+        console.log("Setting Language Id");
         if (!updateGraph) {
             updateGraph = true;
 
@@ -133,6 +137,16 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
 }
 
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
+    vscode.commands.registerCommand("uvlPlayground/uploadFile", () => {
+        console.log("Someone wants to upload files");
+    });
+    vscode.commands.registerCommand("uvlPlayground/downloadFile", () => {
+        console.log("Someone wants to download files");
+        const model1 = globalEditor?.getModel();
+        if(model1){
+            downloadFile(model1.getLinesContent().reduce((prev, curr) => {return prev+'\n'+curr}, ""), fileID);
+        }
+    });
     const client = new MonacoLanguageClient({
         name: 'UVL Language Client', clientOptions: {
             // use a language id as a document selector
@@ -179,7 +193,13 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                                 if (codeLens.command?.title === "generate graph"){
                                     codeLens.command.title = updateGraph ? "Hide Feature Model" : "Show Feature Model";
                                 }
-                            })
+                            });
+                            const command1: vscode.Command = {title: "Download File", command: "uvlPlayground/downloadFile", tooltip: "Download a File"}
+                            const codeLens1: CodeLens = new CodeLens(codeLenses[0].range, command1);
+                            codeLenses.push(codeLens1);
+                            const command: vscode.Command = {title: "Upload File", command: "uvlPlayground/uploadFile", tooltip: "Upload a File"}
+                            const codeLens: CodeLens = new CodeLens(codeLenses[0].range, command);
+                            codeLenses.push(codeLens);
                         })
                     }
                     return results;
