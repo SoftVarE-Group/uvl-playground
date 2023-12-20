@@ -33,6 +33,7 @@ import {initIntroJS} from "./intro.ts";
 import {ExecuteCommandSignature} from "./node_modules/vscode-languageclient";
 import {downloadFile, uploadFile} from "./ImportExportFiles.ts";
 import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
+import {initExamples} from "./examples.ts";
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
@@ -298,6 +299,7 @@ export const startUvlClient = async () => {
 
     initIntroJS();
     initUvlTutorial(editor);
+    initExamples(editor);
     const debouncedSave = lodash.debounce(saveFm, 1000);
 
     globalEditor = editor;
