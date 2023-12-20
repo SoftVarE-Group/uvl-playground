@@ -21,15 +21,26 @@ export function downloadFile(content: string, filename: string): void {
     URL.revokeObjectURL(url);
 }
 
-export function uploadFile(): string {
-    const inputElement = document.createElement('input');
-    inputElement.type = "file";
-    inputElement.style.visibility = "false";
-    document.body.appendChild(inputElement);
-
-    inputElement.click();
-
-    document.body.removeChild(inputElement);
-
-    return "";
+export function uploadFile(): Promise<string> {
+    const uploadInput: HTMLInputElement|null = document.querySelector('#uploadInput');
+    if(uploadInput){
+        uploadInput.click();
+        return new Promise<string>((resolve, reject) => {
+            uploadInput.onchange = () => {
+                console.log("onchange");
+                if(!uploadInput.files){
+                    reject();
+                    return;
+                }
+                const file = uploadInput.files[0];
+                let stringPromise = file.text();
+                uploadInput.files = null;
+                uploadInput.value = "";
+                stringPromise.then((res) => {
+                    resolve(res);
+                });
+            };
+        })
+    }
+    return new Promise((_resolve, reject) => reject());
 }

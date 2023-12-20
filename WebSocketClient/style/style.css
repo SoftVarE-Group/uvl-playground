@@ -95,6 +95,10 @@ dialog {
     }
 }
 
+#uploadInput {
+    display: none;
+}
+
 #uvl-tutorial-div {
     color: white;
     position: relative;

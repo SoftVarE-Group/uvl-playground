@@ -1,7 +1,7 @@
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import * as vscode from 'vscode';
-import {CodeAction, CodeLens, commands, LogLevel, ProviderResult, Uri} from 'vscode';
+import {CodeLens, LogLevel, ProviderResult, Uri} from 'vscode';
 import {whenReady} from '@codingame/monaco-vscode-theme-defaults-default-extension';
 import '@codingame/monaco-vscode-python-default-extension';
 import {createConfiguredEditor, createModelReference} from 'vscode/monaco';
@@ -13,7 +13,7 @@ import getKeybindingsServiceOverride from '@codingame/monaco-vscode-keybindings-
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override';
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override';
 import {initServices, MonacoLanguageClient} from 'monaco-languageclient';
-import {CloseAction, Command, ErrorAction, MessageTransports} from 'vscode-languageclient';
+import {CloseAction, ErrorAction, MessageTransports} from 'vscode-languageclient';
 import {toSocket, WebSocketMessageReader, WebSocketMessageWriter} from 'vscode-ws-jsonrpc';
 import {
     RegisteredFileSystemProvider,
@@ -31,8 +31,7 @@ import initUvlTutorial from './uvlTutorial.ts';
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
 import {ExecuteCommandSignature} from "./node_modules/vscode-languageclient";
-import ITextModel = editor.ITextModel;
-import {downloadFile} from "./ImportExportFiles.ts";
+import {downloadFile, uploadFile} from "./ImportExportFiles.ts";
 import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
@@ -80,8 +79,6 @@ const createWebSocket = (url: string): WebSocket => {
 
 function onExecuteCommand(command: string, args: any[], client: MonacoLanguageClient, next: ExecuteCommandSignature) {
     const information = {command: command, arguments: args};
-    console.log("command: " + command);
-    console.log("args: " + args);
     debounceGenGraph = lodash.debounce(() => {
         client?.sendRequest(ExecuteCommandRequest.type, {command: "uvls/generate_diagram", arguments: [`file:///workspace/${fileID}.uvl`]}).then((res) => {
             createDiagramFromDot(res as string);
@@ -100,10 +97,8 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
         client?.sendRequest(ExecuteCommandRequest.type, information).then((res) => {
             createDiagramFromDot(res as string);
         });
-        console.log("Generate Diagram");
         model.setLanguageId("blablibub");
         model.setLanguageId(languageId);
-        console.log("Setting Language Id");
         if (!updateGraph) {
             updateGraph = true;
 
@@ -126,10 +121,6 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
                 firstPane.style.width = "100%";
                 secondPane.style.width = "0%";
             }
-            client.sendRequest("textDocument/codeLens", {textDocument: {uri: `file:///workspace/${fileID}.uvl`}}).then((res) => {
-                console.log("It worked!!");
-                console.log("res");
-            })
         }
 
     } else {
@@ -139,32 +130,17 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
 
 const createLanguageClient = (transports: MessageTransports): MonacoLanguageClient => {
     vscode.commands.registerCommand("uvlPlayground/uploadFile", () => {
-        console.log("Someone wants to upload files");
-        const uploadDialog: HTMLDialogElement|null = document.querySelector('#uploadDialog');
-        const uploadClose: HTMLButtonElement|null = document.querySelector('#uploadClose');
-        const uploadInput: HTMLInputElement|null = document.querySelector('#uploadInput');
-        if(uploadDialog && uploadClose && uploadInput){
-            uploadClose.onclick = () => uploadDialog.close();
-            uploadDialog.showModal();
-            uploadInput.onchange = () => {
-                uploadDialog.close();
-                if(!uploadInput.files){
-                    return;
-                }
-                const file = uploadInput.files[0];
-                file.text().then((newContent) => {
-                    const opsModel = globalEditor?.getModel();
-                    if (opsModel) {
-                        const fullModelRange = opsModel.getFullModelRange();
-                        const operation: IIdentifiedSingleEditOperation = {text: newContent, range: fullModelRange};
-                        opsModel.applyEdits([operation], false);
-                    }
-                });
-            };
-        }
+        const newContent = uploadFile();
+        newContent.then((textContent) => {
+            const opsModel = globalEditor?.getModel();
+            if (opsModel) {
+                const fullModelRange = opsModel.getFullModelRange();
+                const operation: IIdentifiedSingleEditOperation = {text: textContent, range: fullModelRange};
+                opsModel.applyEdits([operation], false);
+            }
+        })
     });
     vscode.commands.registerCommand("uvlPlayground/downloadFile", () => {
-        console.log("Someone wants to download files");
         const model1 = globalEditor?.getModel();
         if(model1){
             downloadFile(model1.getLinesContent().reduce((prev, curr) => {return prev+'\n'+curr}, ""), fileID);
@@ -189,10 +165,8 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                             // Filters requests send by uvls -> Anti-Pattern in our opinion
                         } else if (Message.isResponse(message)) {
                             // Filters responses send by uvls
-                            console.log("Fetched Response", message);
                         } else if (Message.isNotification(message)) {
                             // Filters Notification messages following json-rpc spec
-                            console.log("Fetched Notification", message);
                         }
                         // "next" is the default behaviour
                         next(message);
@@ -204,13 +178,8 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
                     onExecuteCommand(command, args, client, next);
                 },
                 provideCodeLenses(document, token, next): ProviderResult<CodeLens[]> {
-                    console.log(document);
-                    console.log(token);
-                    console.log(next);
                     const results = next(document, token);
-                    console.log(results);
                     if(results instanceof Promise){
-                        console.log("results is promise");
                         results.then((codeLenses: CodeLens[]) => {
                             codeLenses.forEach((codeLens) => {
                                 if (codeLens.command?.title === "generate graph"){
