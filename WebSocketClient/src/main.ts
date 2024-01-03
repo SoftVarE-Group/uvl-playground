@@ -30,10 +30,11 @@ import initUvlTutorial from './uvlTutorial.ts';
 
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
-import {ExecuteCommandSignature} from "./node_modules/vscode-languageclient";
+import {ExecuteCommandSignature} from "vscode-languageclient";
 import {downloadFile, uploadFile} from "./ImportExportFiles.ts";
 import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 import {initExamples} from "./examples.ts";
+import {aggregateCharacters, displayEditorError, displayEditorErrorAtContent} from "./util.ts";
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
@@ -312,89 +313,8 @@ let debounceGenGraph = lodash.debounce(() => {
     });
 }, 500);
 
-let globalEditor: editor.IStandaloneCodeEditor | null;
-let currentWidget: editor.IOverlayWidget | null;
+export let globalEditor: editor.IStandaloneCodeEditor | null;
 
-
-function displayEditorError(msg: string) {
-    if (!globalEditor) {
-        return;
-    }
-    const overlayWidget: editor.IOverlayWidget = {
-        getId(): string {
-            return 'myCustomWidget';
-        }, getPosition(): editor.IOverlayWidgetPosition | null {
-            return {
-                preference: monaco.editor.OverlayWidgetPositionPreference.TOP_CENTER
-            }
-        }, getDomNode(): HTMLElement {
-            const node = document.createElement('div');
-            const span = document.createElement('span');
-            span.textContent = msg;
-            span.className = "error";
-            node.replaceChildren(span);
-            return node;
-        }
-    }
-    if (currentWidget) {
-        globalEditor.removeOverlayWidget(currentWidget);
-    }
-    currentWidget = overlayWidget;
-    globalEditor.addOverlayWidget(overlayWidget);
-}
-
-let currentContentWidget: editor.IContentWidget | null;
-
-function displayEditorErrorAtContent(msg: string) {
-    if(!globalEditor){
-        return;
-    }
-    const selection = globalEditor.getSelection();
-    const contentWidget: editor.IContentWidget = {
-        getId(): string {
-            return 'myCustomWidget';
-        }, getPosition(): editor.IContentWidgetPosition | null {
-            if (selection) {
-                return {
-                    position: selection.getStartPosition(),
-                    preference: [monaco.editor.ContentWidgetPositionPreference.BELOW]
-                }
-            }
-            return {
-                position: {lineNumber: 1, column: 1}, preference: [monaco.editor.ContentWidgetPositionPreference.BELOW]
-            }
-        }, getDomNode(): HTMLElement {
-            const node = document.createElement('div');
-            const span = document.createElement('span');
-            node.className = "uvl-tooltip";
-            span.className = "tooltip-text";
-            span.textContent = msg;
-            node.replaceChildren(span);
-            return node;
-        }
-    }
-    removeWidget();
-    currentContentWidget = contentWidget;
-    globalEditor.addContentWidget(contentWidget);
-
-    debouceRemoveWidget(editor);
-}
-
-const debouceRemoveWidget = lodash.debounce(removeWidget, 2000);
-
-function removeWidget() {
-    if (currentContentWidget) {
-        globalEditor?.removeContentWidget(currentContentWidget);
-    }
-    currentContentWidget = null;
-}
-
-function aggregateCharacters(model: editor.ITextModel): number {
-    let addReducer = (previousValue: number, currentValue: string) => {
-        return previousValue + currentValue.length
-    };
-    return model?.getLinesContent().reduce(addReducer, 0);
-}
 
 function getInitialFm() {
     let initialFm = "features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1";
