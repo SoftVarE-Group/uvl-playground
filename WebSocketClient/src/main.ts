@@ -137,7 +137,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             if (opsModel) {
                 const fullModelRange = opsModel.getFullModelRange();
                 const operation: IIdentifiedSingleEditOperation = {text: textContent, range: fullModelRange};
-                opsModel.applyEdits([operation], false);
+                opsModel.applyEdits([operation], true);
             }
         })
     });
@@ -267,6 +267,7 @@ export const startUvlClient = async () => {
         model: modelRef.object.textEditorModel, automaticLayout: true
     });
 
+    // Needs to be redone at some point as undo does not always work
     editor.onDidChangeModelContent(() => {
         const model = editor.getModel();
         if (!model) {

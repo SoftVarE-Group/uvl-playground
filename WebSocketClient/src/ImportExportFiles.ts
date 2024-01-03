@@ -27,7 +27,6 @@ export function uploadFile(): Promise<string> {
         uploadInput.click();
         return new Promise<string>((resolve, reject) => {
             uploadInput.onchange = () => {
-                console.log("onchange");
                 if(!uploadInput.files){
                     reject();
                     return;
