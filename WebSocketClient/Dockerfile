@@ -9,7 +9,9 @@ COPY . .
 RUN npm run build
 
 # Install Nginx
-RUN apt-get update && apt-get install -y nginx
+RUN apt-get update
+RUN apt-get install -y nginx
+RUN apt-get clean
 
 # Copy your static files into the Nginx document root directory
 RUN cp -r dist/* /var/www/html/

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "./dark_mode_dev_env.sh && vite dev",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
@@ -28,6 +28,7 @@
     "@codingame/monaco-vscode-theme-service-override": "~1.83.2",
     "@viz-js/viz": "^3.2.3",
     "dotenv": "^16.3.1",
+    "intro.js": "^7.2.0",
     "lodash": "^4.17.21",
     "monaco-editor": "^0.44.0",
     "monaco-editor-workers": "~0.44.0",
