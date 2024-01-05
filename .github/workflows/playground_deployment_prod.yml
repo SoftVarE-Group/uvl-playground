@@ -45,5 +45,7 @@ jobs:
           rsync -avz --update ./WebSocketClient $USERNAME@$HOSTNAME:$WORKDIR
           rsync -avz --update ./docker-compose.yaml $USERNAME@$HOSTNAME:$WORKDIR
           rsync -avz --update ./.env $USERNAME@$HOSTNAME:$WORKDIR
+      - name: Remove spare Docker Images
+        run: ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'docker system prune -f'
       - name: Build and run containers
         run: ssh -i ~/.ssh/id_rsa $USERNAME@$HOSTNAME 'pwd && docker compose up --build -d'
