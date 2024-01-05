@@ -18,7 +18,7 @@ const defaultExampleText = `features
             feature3
     
 constraints
-feature1`;
+    feature1`;
 const iceCreamExampleText = `features
     "Ice Cream" {extended__}
         mandatory
