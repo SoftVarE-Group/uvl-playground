@@ -3,6 +3,7 @@ version: '3.9'
 services:
   traefik:
     image: traefik:v3.0
+    container_name: traefik
     ports:
       - "80:80"
       - "443:443"
@@ -41,6 +42,7 @@ services:
       - "traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
 
   webserver:
+    container_name: Webserver
     build:
         context: ./WebSocketClient
         dockerfile: Dockerfile
@@ -57,6 +59,7 @@ services:
       - "traefik.http.routers.webserver.middlewares=mywwwredirect"
       
   languageserver:
+    container_name: LanguageServer
     build:
         context: ./WebSocketLanguageServer
         dockerfile: Dockerfile
