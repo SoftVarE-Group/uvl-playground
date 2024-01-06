@@ -9,14 +9,16 @@ export const initIntroJS = () => {
 
     intro.setOptions({
         steps: [{
-            element: '#container', intro: 'This is the texteditor where you write and edit your uvl feature model.',
+            element: '#container', intro: 'This is the texteditor where you write and edit your UVL feature model. It will assists you with syntaxhighlighting, autocompletion and more features.',
         }, {
-            element: '.codelens-decoration', intro: 'You can use the buttons to activate and deactivate functionality.'
+            element: '.codelens-decoration', intro: 'You can click on the buttons to use a variety of features.'
         }, {
             element: "[id='1']",
-            intro: 'Click here to visualize your feature model und click on it again to hide it again.'
+            intro: 'For example click here to visualize your feature model. The feature model on the right is then automatically updated when you edit the model. Click on it again to hide it.'
         }, {
             element: "#separator", intro: 'You can change the size of the editor and the visualization with your mouse.'
+        }, {
+            element: "#uvl-tutorialButton", intro: 'If you are not familiar with UVL or need a little refresh click here to get a quick tutorial of the language.'
         }],
     });
 
@@ -24,7 +26,10 @@ export const initIntroJS = () => {
 
     intro.onchange(function(targetElement) {
         if(targetElement.id === "1"){
-            sendGenerateGraphCommand();
+            setTimeout(() => {
+                sendGenerateGraphCommand();
+            }, 100);
+            
         }
         
       });
