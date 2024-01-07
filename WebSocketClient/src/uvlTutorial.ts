@@ -39,9 +39,10 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         let newDiv = document.createElement('div');
         newDiv.id = "uvl-tutorial-div";
         let headline = document.createElement('h2');
+        
         headline.textContent = content.title;
         let text = document.createElement('div');
-        text.textContent = content.text;
+        text.innerHTML = content.text;
         text.className = 'text';
 
         let navigationContainer = document.createElement('div');

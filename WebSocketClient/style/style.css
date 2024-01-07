@@ -9,6 +9,10 @@ body {
     background-color: #1e1e1e; /* Dark background color */
 }
 
+h2 {
+    text-align: center;
+}
+
 .error {
     color: red;
 }
