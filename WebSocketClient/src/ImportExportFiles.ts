@@ -1,3 +1,5 @@
+import config from './config';
+
 export function downloadFile(content: string, filename: string): void {
     // Create a Blob from the file content
     const blob = new Blob([content], {type: 'text/plain'});
@@ -36,7 +38,12 @@ export function uploadFile(): Promise<string> {
                 uploadInput.files = null;
                 uploadInput.value = "";
                 stringPromise.then((res) => {
-                    resolve(res);
+                    if(res.length > config.MAX_NUMBER_LINES){
+                        resolve(res.split('\n').slice(0, config.MAX_NUMBER_LINES - 1).reduce((acc, curr) => acc + curr + "\n", ""));
+                    }else{
+                        resolve(res);
+                    }
+                    
                 });
             };
         })

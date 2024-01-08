@@ -145,7 +145,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
     vscode.commands.registerCommand("uvlPlayground/downloadFile", () => {
         const model1 = globalEditor?.getModel();
         if(model1){
-            downloadFile(model1.getLinesContent().reduce((prev, curr) => {return prev+'\n'+curr}, ""), fileID);
+            downloadFile(model1.getLinesContent().reduce((prev, curr) => {return prev+curr+'\n'}, ""), fileID);
         }
     });
     const client = new MonacoLanguageClient({
