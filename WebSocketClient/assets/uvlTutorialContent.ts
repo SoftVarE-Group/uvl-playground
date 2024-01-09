@@ -21,7 +21,7 @@ export const tutorialContent = [{
             "SATA-Devices"`
 }, {
     title: "Basic Constraints",
-    text: "<p>Use the <b><tt>constraints</tt></b> keyword to start the section of constraints. In its basic form, a constraint uses propositional logic.</br>In this example we enforce that if a computer contains a dedicated graphics card, it must also use liquid cooling. We do that with the <b><tt>=></tt></b> symbol to represent an implication.</br>Other logic connectors are <b><tt>&</tt></b>, <b><tt>|</tt></b>, <b><tt>not</tt></b></p>",
+    text: "<p>Use the <b><tt>constraints</tt></b> keyword to start the section of constraints. In its basic form, a constraint uses propositional logic.</br>In this example, we enforce that if a computer contains a dedicated graphics card, it must also use liquid cooling. We do that with the <b><tt>=></tt></b> symbol to represent an implication.</br>Other logic connectors are <b><tt>&</tt></b>, <b><tt>|</tt></b>, <b><tt>not</tt></b></p>",
     codeListing: `features
     Computer
         mandatory
@@ -41,7 +41,7 @@ constraints
     Dedicated => Liquid`
 }, {
     title: "Feature Attributes",
-    text: "<p>Features can have attributes in curly brackets as key value pairs. The value can be omitted if it is a boolean attribute and the value is true. This is the case for the <b><tt>abstract</tt></b> attribute in the feature <b><tt>Computer</tt></b>. We also use attribues to indicate the power consumption of different parts of the computer.</p>",
+    text: "<p>Features can have attributes in curly brackets as key value pairs. The value can be omitted if it is a boolean attribute and the value is true. This is the case for the <b><tt>abstract</tt></b> attribute in the feature <b><tt>Computer</tt></b>. We also use attributes to indicate the power consumption of different parts of the computer.</p>",
     codeListing: `features
     Computer {abstract}
         mandatory
@@ -61,7 +61,7 @@ constraints
     Dedicated => Liquid`
 }, {
     title: "Complex Constraints",
-    text: "<p>We can now create more complex constraints and for example access attribtues of features. In this case we use the aggregate function <b><tt>sum</tt></b> to sum over all powerConsumption attributes and check if the overall <b><tt>powerConsumption</tt></b> is larger than a threshold and if so enforce a stronger power supply unit. You could also access feature attribtues and perform basic calculations with them.</p>",
+    text: "<p>We can now create more complex constraints and for example access attributes of features. In this case we use the aggregate function <b><tt>sum</tt></b> to sum over all powerConsumption attributes and check if the overall <b><tt>powerConsumption</tt></b> is larger than a threshold and if so enforce a stronger power supply unit. You could also access feature attributes and perform basic calculations with them.</p>",
     codeListing: `features
     Computer {abstract}
         mandatory
@@ -86,7 +86,7 @@ constraints
     sum(powerConsumption) > 300 => StrongPSU`
 }, {
     title: "Group Cardinality",
-    text: "<p>Group cardinalities are more generic than <b><tt>or</tt></b> and <b><tt>alternative</tt></b>.</br>In our example the motherboard only has space for up to 2 SATA-Devices. So we enforce that there are 0, 1, or 2 SATA-Devices.</p>",
+    text: "<p>Group cardinalities are more generic than <b><tt>or</tt></b> and <b><tt>alternative</tt></b>.</br>In our example, the motherboard only has space for up to 2 SATA-Devices. So we enforce that there are 0, 1, or 2 SATA-Devices.</p>",
     codeListing: `features
     Computer {abstract}
         mandatory
@@ -115,7 +115,7 @@ constraints
     sum(powerConsumption) > 300 => StrongPSU`
 }, {
     title: "Feature Cardinality",
-    text: "<p>Feature Cardinality allows a feature to be selected multiple times. In our example we can use up to 4 ram bars.</p>",
+    text: "<p>Feature Cardinality allows a feature to be selected multiple times. In our example, we can use up to 4 ram bars.</p>",
     codeListing: `features
     Computer {abstract}
         mandatory
@@ -145,7 +145,7 @@ constraints
     sum(powerConsumption) > 300 => StrongPSU`
 }, {
     title: "Types",
-    text: "<p>In UVL you can use types to create special features. In this case we change the power supply unit. It has a <b><tt>Manufacturer</tt></b> feature of the type <b><tt>String</tt></b> and a <b><tt>Watt</tt></b> feature of the type <b><tt>Integer</tt></b>.</br>This means, when configuring the feature model, the features are not just selected or deselected, but get a value of their coresponding type. We can utilize this for even more complex constraints and check if the manufaturer of the CPU and the PSU match.</p>",
+    text: "<p>In UVL you can use types to create special features. In this case, we change the power supply unit. It has a <b><tt>Manufacturer</tt></b> feature of the type <b><tt>String</tt></b> and a <b><tt>Watt</tt></b> feature of the type <b><tt>Integer</tt></b>.</br>This means, when configuring the feature model, the features are not just selected or deselected, but get a value of their corresponding type. We can utilize this for even more complex constraints and check if the manufacturer of the CPU and the PSU match.</p>",
     codeListing: `features
     Computer {abstract}
         mandatory
@@ -176,5 +176,5 @@ constraints
     CPU.Manufacturer == Manufacturer`
 }, {
     title: "The End",
-    text: "<p>Now you have a basic understanding of the Universal Variablity Language. Go on and use the playground to test the language.</br>If you plan on using the language more frequently we recommend installing an extension in an IDE of your choice, because it provides more features. Press the 'Done' button to close the tutorial.</p>"
+    text: "<p>Now you have a basic understanding of the Universal Variablity Language. Go on and use the playground to test the language.</br>If you plan on using the language more frequently we recommend installing the </br><a href='https://marketplace.visualstudio.com/items?itemName=caradhras.uvls-code'>'UVLS - Universal Variability Language Server'</a></br> VS-Code extension, because it provides more features.</br>Press the 'Done' button to close the tutorial.</p>"
 }]
