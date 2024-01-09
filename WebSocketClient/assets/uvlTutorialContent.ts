@@ -3,7 +3,7 @@ export const tutorialContent = [{
     text: "<p>Welcome to the UVL Tutorial! </br>All code listings will automatically be placed in the editor on the left. Click <b>'Next'</b> to start the tutorial.</p>"
 }, {
     title: "Basic Feature Model",
-    text: "<p>Start with the <b><tt>features</tt></b> key word to start enumerating your features. Indentations matter in UVL and represent the tree structure.</br>We will start with a basic feature model that represents a computer. Every computer needs a CPU and can optionaly have some devices connected via SATA.</p>",
+    text: "<p>Start with the <b><tt>features</tt></b> key word to start enumerating your features. Indentations matter in UVL and represent the tree structure.</br>We will start with a basic feature model that represents a computer. Every computer needs a CPU and can optionally have some devices connected via SATA.</p>",
     codeListing: `features
     Computer
         mandatory
@@ -145,7 +145,7 @@ constraints
     sum(powerConsumption) > 300 => StrongPSU`
 }, {
     title: "Types",
-    text: "<p>In UVL you can use types to create special features. In this case, we change the power supply unit. It has a <b><tt>Manufacturer</tt></b> feature of the type <b><tt>String</tt></b> and a <b><tt>Watt</tt></b> feature of the type <b><tt>Integer</tt></b>.</br>This means, when configuring the feature model, the features are not just selected or deselected, but get a value of their corresponding type. We can utilize this for even more complex constraints and check if the manufacturer of the CPU and the PSU match.</p>",
+    text: "<p>In UVL, you can use types to create special features. In this case, we change the power supply unit. It has a <b><tt>Manufacturer</tt></b> feature of the type <b><tt>String</tt></b> and a <b><tt>Watt</tt></b> feature of the type <b><tt>Integer</tt></b>.</br>This means, when configuring the feature model, the features are not just selected or deselected, but get a value of their corresponding type. We can utilize this for even more complex constraints and check if the manufacturer of the CPU and the PSU match.</p>",
     codeListing: `features
     Computer {abstract}
         mandatory
@@ -176,5 +176,5 @@ constraints
     CPU.Manufacturer == Manufacturer`
 }, {
     title: "The End",
-    text: "<p>Now you have a basic understanding of the Universal Variablity Language. Go on and use the playground to test the language.</br>If you plan on using the language more frequently we recommend installing the </br><a href='https://marketplace.visualstudio.com/items?itemName=caradhras.uvls-code'>'UVLS - Universal Variability Language Server'</a></br> VS-Code extension, because it provides more features.</br>Press the 'Done' button to close the tutorial.</p>"
+    text: "<p>Now you have a basic understanding of the Universal Variability Language. Go on and use the playground to test the language.</br>If you plan on using the language more frequently we recommend installing the </br><a href='https://marketplace.visualstudio.com/items?itemName=caradhras.uvls-code'>'UVLS - Universal Variability Language Server'</a></br> VS-Code extension, because it provides more features.</br>Press the 'Done' button to close the tutorial.</p>"
 }]

@@ -9,16 +9,16 @@ export const initIntroJS = () => {
 
     intro.setOptions({
         steps: [{
-            element: '#container', intro: 'This is the texteditor where you write and edit your UVL feature model. It will assists you with syntaxhighlighting, autocompletion and more features.',
+            element: '#container', intro: 'This is the text editor where you write and edit your UVL feature model. It will assist you with syntax highlighting, autocompletion and more features.',
         }, {
             element: '.codelens-decoration', intro: 'You can click on the buttons to use a variety of features.'
         }, {
             element: "[id='1']",
-            intro: 'For example click here to visualize your feature model. The feature model on the right is then automatically updated when you edit the model. Click on it again to hide it.'
+            intro: 'For example, click here to visualize your feature model. The feature model on the right is then automatically updated when you edit the model. Click on it again to hide it.'
         }, {
             element: "#separator", intro: 'You can change the size of the editor and the visualization with your mouse.'
         }, {
-            element: "#uvl-tutorialButton", intro: 'If you are not familiar with UVL or need a little refresh click here to get a quick tutorial of the language.'
+            element: "#uvl-tutorialButton", intro: 'If you are not familiar with UVL or need a little refresh, click here to get a quick tutorial of the language.'
         }],
     });
 
