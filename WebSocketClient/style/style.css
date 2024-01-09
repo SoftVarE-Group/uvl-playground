@@ -121,6 +121,27 @@ dialog {
         padding: 10px;
     }
 
+    & #diffEditorDiv {
+        height: 200px;
+        width: 96%;
+        padding-top: 10px;
+        & .monaco-diff-editor {
+            & .original {
+                display: none;
+            }
+        }
+    }
+
+    & #hint {
+        font-size: 15px;
+        color: #777777;
+    }
+
+    & #hint:hover {
+        font-size: 15px;
+        color: #999999;
+    }
+
     & button {
         background-color: #1e1e1e;
         color: #fff;
@@ -131,6 +152,7 @@ dialog {
         font-size: 16px;
     }
 }
+
 
 
 h1 {

@@ -265,7 +265,7 @@ export const startUvlClient = async () => {
 
     // create monaco editor
     const editor = createConfiguredEditor(document.getElementById('container')!, {
-        model: modelRef.object.textEditorModel, automaticLayout: true
+        model: modelRef.object.textEditorModel, automaticLayout: true, minimap: {enabled: false}
     });
 
     // Needs to be redone at some point as undo does not always work

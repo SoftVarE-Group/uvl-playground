@@ -1,7 +1,9 @@
-import {editor} from "monaco-editor";
+import * as monaco from "monaco-editor";
 import {tutorialContent} from "../assets/uvlTutorialContent.ts";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
+import {editor} from "monaco-editor";
+import IStandaloneDiffEditorConstructionOptions = editor.IStandaloneDiffEditorConstructionOptions;
 
 export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
     let tutorialToogle = false;
@@ -32,6 +34,17 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         }
         tutorialDiv = getTutorialPage(mainDiv, pageNumber);
         mainDiv.appendChild(tutorialDiv);
+
+        let modifiedCode = tutorialContent[pageNumber].codeListing;
+        let originalCode = tutorialContent[pageNumber - 1].codeListing;
+        if (modifiedCode && originalCode) {
+            const paragraph = document.createElement("p");
+            paragraph.id = "hint";
+            paragraph.textContent = "Show Changes ›";
+            tutorialDiv.appendChild(paragraph);
+
+            paragraph.onclick = () => changesViewOnClick(tutorialDiv, paragraph, originalCode, modifiedCode);
+        }
     }
 
     function getTutorialPage(mainDiv, pageNumber) {
@@ -39,7 +52,7 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         let newDiv = document.createElement('div');
         newDiv.id = "uvl-tutorial-div";
         let headline = document.createElement('h2');
-        
+
         headline.textContent = content.title;
         let text = document.createElement('div');
         text.innerHTML = content.text;
@@ -86,12 +99,53 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         return newDiv;
     }
 
-    function changeEditorContent(editor: IStandaloneCodeEditor, newContent: string){
+    function changeEditorContent(editor: IStandaloneCodeEditor, newContent: string) {
         const opsModel = editor.getModel();
         if (opsModel) {
             const fullModelRange = opsModel.getFullModelRange();
             const operation: IIdentifiedSingleEditOperation = {text: newContent, range: fullModelRange};
             opsModel.applyEdits([operation], false);
+        }
+    }
+
+    function changesViewOnClick(tutorialDiv: HTMLElement | null, paragraph: HTMLParagraphElement, originalCode: string | undefined, modifiedCode: string | undefined) {
+        if(paragraph.textContent === "Show Changes ›" && tutorialDiv && originalCode && modifiedCode){
+            const editordiv = document.createElement("div");
+            editordiv.id = "diffEditorDiv";
+            tutorialDiv.appendChild(editordiv);
+
+            if (!editordiv) return;
+
+            const originalModel = monaco.editor.createModel(originalCode);
+            const modifiedModel = monaco.editor.createModel(modifiedCode);
+
+            let options: IStandaloneDiffEditorConstructionOptions = {
+                minimap: {enabled: false},
+                scrollbar: {
+                    vertical: "visible",
+                    horizontal: "visible",
+                    horizontalScrollbarSize: 5,
+                    verticalScrollbarSize: 5
+                },
+                renderOverviewRuler: false,
+                lineNumbers: "off"
+            };
+
+            const diffEditor = monaco.editor.createDiffEditor(editordiv, options);
+
+            diffEditor.setModel({
+                original: originalModel, modified: modifiedModel
+            });
+
+            paragraph.textContent = "Hide Changes"
+        }
+        else if(paragraph.textContent === "Hide Changes" && tutorialDiv){
+            const diffEditor = document.getElementById("diffEditorDiv");
+            if (diffEditor){
+                tutorialDiv.removeChild(diffEditor);
+            }
+
+            paragraph.textContent = "Show Changes ›"
         }
     }
 }
