@@ -2,9 +2,9 @@ FROM node:18
 # Create app directory
 WORKDIR /usr/src/app
 
-RUN apt-get update
-RUN apt-get install -y z3
-RUN apt-get clean
+RUN apt-get update \
+    && apt-get install -y z3 \
+    && apt-get clean
 
 COPY package*.json ./
 

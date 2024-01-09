@@ -30,7 +30,7 @@ export function uploadFile(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             uploadInput.onchange = () => {
                 if(!uploadInput.files){
-                    reject();
+                    reject("Cannot reach HTML-Input field");
                     return;
                 }
                 const file = uploadInput.files[0];
@@ -48,5 +48,5 @@ export function uploadFile(): Promise<string> {
             };
         })
     }
-    return new Promise((_resolve, reject) => reject());
+    return new Promise((_resolve, reject) => reject("Cannot reach HTML-Input field"));
 }

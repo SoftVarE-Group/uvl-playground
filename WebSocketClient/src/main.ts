@@ -13,12 +13,10 @@ import getKeybindingsServiceOverride from '@codingame/monaco-vscode-keybindings-
 import getThemeServiceOverride from '@codingame/monaco-vscode-theme-service-override';
 import getTextmateServiceOverride from '@codingame/monaco-vscode-textmate-service-override';
 import {initServices, MonacoLanguageClient} from 'monaco-languageclient';
-import {CloseAction, ErrorAction, MessageTransports} from 'vscode-languageclient';
+import {CloseAction, ErrorAction, ExecuteCommandSignature, MessageTransports} from 'vscode-languageclient';
 import {toSocket, WebSocketMessageReader, WebSocketMessageWriter} from 'vscode-ws-jsonrpc';
 import {
-    RegisteredFileSystemProvider,
-    RegisteredMemoryFile,
-    registerFileSystemOverlay
+    RegisteredFileSystemProvider, RegisteredMemoryFile, registerFileSystemOverlay
 } from 'vscode/service-override/files';
 import config from './config.js';
 import {instance} from "@viz-js/viz";
@@ -30,11 +28,10 @@ import initUvlTutorial from './uvlTutorial.ts';
 
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
-import {ExecuteCommandSignature} from "vscode-languageclient";
 import {downloadFile, uploadFile} from "./ImportExportFiles.ts";
-import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 import {initExamples} from "./examples.ts";
 import {aggregateCharacters, displayEditorError, displayEditorErrorAtContent} from "./util.ts";
+import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 
 buildWorkerDefinition('./node_modules/monaco-editor-workers/dist/workers', new URL('', window.location.href).href, false);
 
@@ -52,7 +49,7 @@ const createUrl = (hostname: string, port: number, path: string, secure: boolean
 
 const createWebSocket = (url: string): WebSocket => {
     const webSocket = new WebSocket(url);
-    
+
     webSocket.onerror = () => {
         displayEditorError("Could not connect to language server. Reconnecting ...");
         setTimeout(() => {
@@ -75,14 +72,17 @@ const createWebSocket = (url: string): WebSocket => {
             }, 500);
         });
     };
-    
+
     return webSocket;
 };
 
 function onExecuteCommand(command: string, args: any[], client: MonacoLanguageClient, next: ExecuteCommandSignature) {
     const information = {command: command, arguments: args};
     debounceGenGraph = lodash.debounce(() => {
-        client?.sendRequest(ExecuteCommandRequest.type, {command: "uvls/generate_diagram", arguments: [`file:///workspace/${fileID}.uvl`]}).then((res) => {
+        client?.sendRequest(ExecuteCommandRequest.type, {
+            command: "uvls/generate_diagram",
+            arguments: [`file:///workspace/${fileID}.uvl`]
+        }).then((res) => {
             createDiagramFromDot(res as string);
         });
     }, 500);
@@ -124,7 +124,6 @@ function onExecuteCommand(command: string, args: any[], client: MonacoLanguageCl
                 secondPane.style.width = "0%";
             }
         }
-
     } else {
         next(command, args);
     }
@@ -144,8 +143,10 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
     });
     vscode.commands.registerCommand("uvlPlayground/downloadFile", () => {
         const model1 = globalEditor?.getModel();
-        if(model1){
-            downloadFile(model1.getLinesContent().reduce((prev, curr) => {return prev+curr+'\n'}, ""), fileID);
+        if (model1) {
+            downloadFile(model1.getLinesContent().reduce((prev, curr) => {
+                return prev + curr + '\n'
+            }, ""), fileID);
         }
     });
     const client = new MonacoLanguageClient({
@@ -178,20 +179,27 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
             middleware: {
                 executeCommand(command, args, next) {
                     onExecuteCommand(command, args, client, next);
-                },
-                provideCodeLenses(document, token, next): ProviderResult<CodeLens[]> {
+                }, provideCodeLenses(document, token, next): ProviderResult<CodeLens[]> {
                     const results = next(document, token);
-                    if(results instanceof Promise){
+                    if (results instanceof Promise) {
                         results.then((codeLenses: CodeLens[]) => {
                             codeLenses.forEach((codeLens) => {
-                                if (codeLens.command?.title === "generate graph"){
+                                if (codeLens.command?.title === "generate graph") {
                                     codeLens.command.title = updateGraph ? "Hide Feature Model" : "Show Feature Model";
                                 }
                             });
-                            const command1: vscode.Command = {title: "Download File", command: "uvlPlayground/downloadFile", tooltip: "Download a File"}
+                            const command1: vscode.Command = {
+                                title: "Download File",
+                                command: "uvlPlayground/downloadFile",
+                                tooltip: "Download a File"
+                            }
                             const codeLens1: CodeLens = new CodeLens(codeLenses[0].range, command1);
                             codeLenses.push(codeLens1);
-                            const command: vscode.Command = {title: "Upload File", command: "uvlPlayground/uploadFile", tooltip: "Upload a File"}
+                            const command: vscode.Command = {
+                                title: "Upload File",
+                                command: "uvlPlayground/uploadFile",
+                                tooltip: "Upload a File"
+                            }
                             const codeLens: CodeLens = new CodeLens(codeLenses[0].range, command);
                             codeLenses.push(codeLens);
                         })
@@ -213,7 +221,7 @@ const createLanguageClient = (transports: MessageTransports): MonacoLanguageClie
 function createDiagramFromDot(res: string): void {
     instance().then(viz => {
         const div = document.getElementsByClassName("graph");
-        let svg = viz.renderSVGElement(res!);
+        let svg = viz.renderSVGElement(res);
         svg.id = "SVGGraph";
         div[0].replaceChildren(svg);
     });
@@ -287,8 +295,7 @@ export const startUvlClient = async () => {
         } else if (numberCharacters > config.MAX_NUMBER_CHARACTERS) {
             if (numberCharacters > config.MAX_NUMBER_CHARACTERS + 1) {
                 vscode.commands.executeCommand("undo");
-            }
-            else {
+            } else {
                 vscode.commands.executeCommand("deleteLeft");
             }
             displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters!`);
@@ -308,7 +315,10 @@ export const startUvlClient = async () => {
 };
 
 let debounceGenGraph = lodash.debounce(() => {
-    languageClient?.sendRequest(ExecuteCommandRequest.type, {command: "uvls/generate_diagram", arguments: [`file:///workspace/${fileID}.uvl`]}).then((res) => {
+    languageClient?.sendRequest(ExecuteCommandRequest.type, {
+        command: "uvls/generate_diagram",
+        arguments: [`file:///workspace/${fileID}.uvl`]
+    }).then((res) => {
         createDiagramFromDot(res as string);
     });
 }, 500);

@@ -3,9 +3,7 @@ import { sendGenerateGraphCommand } from "./main";
 
 
 export const initIntroJS = () => {
-
-
-    var intro = introJs();
+    const intro = introJs();
 
     intro.setOptions({
         steps: [{
@@ -47,8 +45,5 @@ export const initIntroJS = () => {
                 helperLayer[0].style["box-shadow"] = "rgb(255, 255, 255) 0px 0px 1px 2px, rgba(230, 230, 230, 0.44) 0px 0px 0px 5000px";
             }
         }, 100);
-            
-        
     });
-
 }
