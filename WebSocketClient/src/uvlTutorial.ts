@@ -108,8 +108,8 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         }
     }
 
-    function changesViewOnClick(tutorialDiv: HTMLElement, paragraph: HTMLParagraphElement, originalCode: string, modifiedCode: string) {
-        if(paragraph.textContent === "Show Changes ›"){
+    function changesViewOnClick(tutorialDiv: HTMLElement | null, paragraph: HTMLParagraphElement, originalCode: string | undefined, modifiedCode: string | undefined) {
+        if(paragraph.textContent === "Show Changes ›" && tutorialDiv && originalCode && modifiedCode){
             const editordiv = document.createElement("div");
             editordiv.id = "diffEditorDiv";
             tutorialDiv.appendChild(editordiv);
@@ -139,9 +139,11 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
 
             paragraph.textContent = "Hide Changes"
         }
-        else if(paragraph.textContent === "Hide Changes"){
+        else if(paragraph.textContent === "Hide Changes" && tutorialDiv){
             const diffEditor = document.getElementById("diffEditorDiv");
-            tutorialDiv.removeChild(diffEditor);
+            if (diffEditor){
+                tutorialDiv.removeChild(diffEditor);
+            }
 
             paragraph.textContent = "Show Changes ›"
         }
