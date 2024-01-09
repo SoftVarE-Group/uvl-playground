@@ -48,5 +48,5 @@ export function uploadFile(): Promise<string> {
             };
         })
     }
-    return new Promise((_resolve, reject) => reject("Cannot reach HTML-Input field"));
+    return Promise.reject("Cannot reach HTML-Input field");
 }
