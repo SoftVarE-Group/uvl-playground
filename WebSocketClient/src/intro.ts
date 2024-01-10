@@ -7,7 +7,7 @@ export const initIntroJS = () => {
 
     intro.setOptions({
         steps: [{
-            element: '#container', intro: 'This is the text editor where you write and edit your UVL feature model. It will assist you with syntax highlighting, autocompletion and more features.',
+            element: '#container', intro: 'This is the text editor where you write and edit your UVL feature model. It will assist you with syntax highlighting, autocompletion and more features.\n Please note: The editor limits the content length as it is not intended for larger projects.',
         }, {
             element: '.codelens-decoration', intro: 'You can click on the buttons to use a variety of features.'
         }, {
