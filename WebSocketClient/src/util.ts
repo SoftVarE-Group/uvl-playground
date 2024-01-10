@@ -70,7 +70,7 @@ export function displayEditorErrorAtContent(msg: string) {
     debounceRemoveWidget();
 }
 
-const debounceRemoveWidget = lodash.debounce(removeWidget, 2000);
+const debounceRemoveWidget = lodash.debounce(removeWidget, 5000);
 
 function removeWidget() {
     if (currentContentWidget) {

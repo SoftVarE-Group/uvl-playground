@@ -1,19 +1,13 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) 2018-2022 TypeFox GmbH (http://www.typefox.io). All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-import { WebSocketServer } from 'ws';
-import { IncomingMessage } from 'http';
-import { URL } from 'url';
-import { Socket } from 'net';
+import {WebSocketServer} from 'ws';
+import {IncomingMessage} from 'http';
+import {Socket} from 'net';
 import express from 'express';
-import { resolve } from 'path';
-import { IWebSocket, WebSocketMessageReader, WebSocketMessageWriter } from 'vscode-ws-jsonrpc';
-import { createConnection, createServerProcess, forward } from 'vscode-ws-jsonrpc/server';
-import { Message, InitializeRequest, InitializeParams } from 'vscode-languageserver';
+import {IWebSocket, WebSocketMessageReader, WebSocketMessageWriter} from 'vscode-ws-jsonrpc';
+import {createConnection, createServerProcess, forward} from 'vscode-ws-jsonrpc/server';
+import {InitializeParams, InitializeRequest, Message} from 'vscode-languageserver';
 import config from './config.js';
 
-const MAX_MESSAGE_SIZE = 11000;
+const MAX_MESSAGE_SIZE = 100000;
 
 const launchLanguageServer = (socket: IWebSocket) => {
     const serverName: string = 'UVLS';
@@ -24,9 +18,8 @@ const launchLanguageServer = (socket: IWebSocket) => {
     const writer = new WebSocketMessageWriter(socket);
     const socketConnection = createConnection(reader, writer, () => socket.dispose());
     if (serverConnection) {
-        
         forward(socketConnection, serverConnection, message => {
-            if(JSON.stringify(message).length > MAX_MESSAGE_SIZE){
+            if (JSON.stringify(message).length > MAX_MESSAGE_SIZE) {
                 console.log(`blocked message larger than ${MAX_MESSAGE_SIZE}`);
                 message = {jsonrpc: "2.0"};
                 socketConnection.dispose();
@@ -40,7 +33,7 @@ const launchLanguageServer = (socket: IWebSocket) => {
                     initializeParams.processId = process.pid;
                 }
             }
-            if(Message.isNotification(message)){
+            if (Message.isNotification(message)) {
                 logObjectRecursively(message);
             }
             if (Message.isResponse(message)) {
@@ -48,7 +41,6 @@ const launchLanguageServer = (socket: IWebSocket) => {
                 logObjectRecursively(message);
             }
             return message;
-            
         });
     }
 };
@@ -81,37 +73,33 @@ export const runUVLServer = () => {
     const server = app.listen(config.port);
     // create the web socket
     const wss = new WebSocketServer({
-        noServer: true,
-        perMessageDeflate: false,
-        clientTracking: true,
+        noServer: true, perMessageDeflate: false, clientTracking: true,
     });
 
     server.on('upgrade', (request: IncomingMessage, socket: Socket, head: Buffer) => {
-        const baseURL = `http://${request.headers.host}/`;
-        const pathname = request.url ? new URL(request.url, baseURL).pathname : undefined;
-            wss.handleUpgrade(request, socket, head, webSocket => {
-                const socket: IWebSocket = {
-                    send: content => webSocket.send(content, error => {
-                        if (error) {
-                            throw error;
-                        }
-                    }),
-                    onMessage: cb => webSocket.on('message', (data) => {
-                        cb(data);
-                    }),
-                    onError: cb => webSocket.on('error', cb),
-                    onClose: cb => webSocket.on('close', cb),
-                    dispose: () => webSocket.close()
-                };
-                // launch the server when the web socket is opened
-                if (webSocket.readyState === webSocket.OPEN) {
+        wss.handleUpgrade(request, socket, head, webSocket => {
+            const socket: IWebSocket = {
+                send: content => webSocket.send(content, error => {
+                    if (error) {
+                        throw error;
+                    }
+                }),
+                onMessage: cb => webSocket.on('message', (data) => {
+                    cb(data);
+                }),
+                onError: cb => webSocket.on('error', cb),
+                onClose: cb => webSocket.on('close', cb),
+                dispose: () => webSocket.close()
+            };
+            // launch the server when the web socket is opened
+            if (webSocket.readyState === webSocket.OPEN) {
+                launchLanguageServer(socket);
+            } else {
+                webSocket.on('open', () => {
                     launchLanguageServer(socket);
-                } else {
-                    webSocket.on('open', () => {
-                        launchLanguageServer(socket);
-                    });
-                }
-            });
+                });
+            }
+        });
     });
 };
 

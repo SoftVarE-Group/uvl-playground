@@ -6,16 +6,16 @@ import {editor} from "monaco-editor";
 import IStandaloneDiffEditorConstructionOptions = editor.IStandaloneDiffEditorConstructionOptions;
 
 export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
-    let tutorialToogle = false;
+    let tutorialToggle = false;
     const uvlTutorialButton = document.getElementById("uvl-tutorialButton");
 
     if (uvlTutorialButton) {
         uvlTutorialButton.addEventListener('click', function () {
             let tutorialPageCounter = 0;
-            tutorialToogle = !tutorialToogle;
+            tutorialToggle = !tutorialToggle;
             let mainDiv = document.getElementById("main-div");
             let splitter = document.getElementById("splitter");
-            if (tutorialToogle) {
+            if (tutorialToggle) {
                 splitter!.style.width = "75%";
                 setTutorialPage(mainDiv, tutorialPageCounter);
             } else {
@@ -85,7 +85,7 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
                 }
                 let newDiv = document.getElementById("uvl-tutorial-div");
                 mainDiv.removeChild(newDiv);
-                tutorialToogle = !tutorialToogle;
+                tutorialToggle = !tutorialToggle;
             }
         }
         navigationContainer.appendChild(nextButton);

@@ -142,6 +142,22 @@ dialog {
         color: #999999;
     }
 
+    & .keyword {
+        color: #c586c0;
+    }
+
+    & .literal {
+        color: #9cdcfe;
+    }
+
+    & .qualifier {
+        color: #4fc1ff;
+    }
+
+    & .warning {
+        color: red;
+    }
+
     & button {
         background-color: #1e1e1e;
         color: #fff;

@@ -3,13 +3,11 @@ import { sendGenerateGraphCommand } from "./main";
 
 
 export const initIntroJS = () => {
-
-
-    var intro = introJs();
+    const intro = introJs();
 
     intro.setOptions({
         steps: [{
-            element: '#container', intro: 'This is the text editor where you write and edit your UVL feature model. It will assist you with syntax highlighting, autocompletion and more features.',
+            element: '#container', intro: 'This is the text editor where you write and edit your UVL feature model. It will assist you with syntax highlighting, autocompletion and more features.\n Please note: The editor limits the content length as it is not intended for larger projects.',
         }, {
             element: '.codelens-decoration', intro: 'You can click on the buttons to use a variety of features.'
         }, {
@@ -41,14 +39,11 @@ export const initIntroJS = () => {
         intro.setOption("highlightClass", "tmpClass");
         intro.start();
 
-        var helperLayer = document.getElementsByClassName("tmpClass");
+        const helperLayer = document.getElementsByClassName("tmpClass");
         setTimeout(() => {
             if(helperLayer[0] instanceof HTMLElement){
                 helperLayer[0].style["box-shadow"] = "rgb(255, 255, 255) 0px 0px 1px 2px, rgba(230, 230, 230, 0.44) 0px 0px 0px 5000px";
             }
         }, 100);
-            
-        
     });
-
 }
