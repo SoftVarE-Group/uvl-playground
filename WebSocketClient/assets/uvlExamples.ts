@@ -6,9 +6,9 @@ let globalEditor: editor.IStandaloneCodeEditor|null;
 
 export function initExamples(editor: editor.IStandaloneCodeEditor) {
     globalEditor = editor;
-    loadDefaultExample();
-    loadIceCreamExample();
-    loadComputerExample();
+    initExample("Default", defaultExampleText);
+    initExample("Ice Cream", iceCreamExampleText);
+    initExample("Computer", computerExampleText);
 }
 
 const defaultExampleText = `features
@@ -75,42 +75,17 @@ constraints
     Dedicated => Liquid
     sum(powerConsumption) > 300 => StrongPSU`
 
-function loadDefaultExample() {
-    const button: HTMLButtonElement|null = document.querySelector("#defaultExample");
-    if(button){
+function initExample(name: string, content: string){
+    const dropdown = document.getElementById("examples-dropdown");
+    const button = document.createElement("button");
+    if(dropdown){
+        dropdown.appendChild(button);
+        button.innerText = name; 
         button.onclick = () => {
             const opsModel = globalEditor?.getModel();
             if (opsModel) {
                 const fullModelRange = opsModel.getFullModelRange();
-                const operation: IIdentifiedSingleEditOperation = {text: defaultExampleText, range: fullModelRange};
-                opsModel.applyEdits([operation], false);
-            }
-        }
-    }
-}
-
-function loadIceCreamExample() {
-    const button: HTMLButtonElement|null = document.querySelector("#iceCreamExample");
-    if(button){
-        button.onclick = () => {
-            const opsModel = globalEditor?.getModel();
-            if (opsModel) {
-                const fullModelRange = opsModel.getFullModelRange();
-                const operation: IIdentifiedSingleEditOperation = {text: iceCreamExampleText, range: fullModelRange};
-                opsModel.applyEdits([operation], false);
-            }
-        }
-    }
-}
-
-function loadComputerExample() {
-    const button: HTMLButtonElement|null = document.querySelector("#computerExample");
-    if(button){
-        button.onclick = () => {
-            const opsModel = globalEditor?.getModel();
-            if (opsModel) {
-                const fullModelRange = opsModel.getFullModelRange();
-                const operation: IIdentifiedSingleEditOperation = {text: computerExampleText, range: fullModelRange};
+                const operation: IIdentifiedSingleEditOperation = {text: content, range: fullModelRange};
                 opsModel.applyEdits([operation], false);
             }
         }

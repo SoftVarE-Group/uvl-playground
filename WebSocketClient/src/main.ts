@@ -29,7 +29,7 @@ import initUvlTutorial from './uvlTutorial.ts';
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
 import {downloadFile, uploadFile} from "./ImportExportFiles.ts";
-import {initExamples} from "./examples.ts";
+import {initExamples} from "../assets/uvlExamples.ts";
 import {aggregateCharacters, displayEditorError, displayEditorErrorAtContent} from "./util.ts";
 import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 
