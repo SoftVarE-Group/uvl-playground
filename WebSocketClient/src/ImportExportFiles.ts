@@ -1,4 +1,5 @@
 import config from './config';
+import {displayEditorErrorAtContent} from "./util.ts";
 
 export function downloadFile(content: string, filename: string): void {
     // Create a Blob from the file content
@@ -38,7 +39,9 @@ export function uploadFile(): Promise<string> {
                 uploadInput.files = null;
                 uploadInput.value = "";
                 stringPromise.then((res) => {
-                    if(res.length > config.MAX_NUMBER_LINES){
+                    const lineCount = res.split('\n').length;
+                    if(lineCount > config.MAX_NUMBER_LINES){
+                        displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
                         resolve(res.split('\n').slice(0, config.MAX_NUMBER_LINES - 1).reduce((acc, curr) => acc + curr + "\n", ""));
                     }else{
                         resolve(res);
