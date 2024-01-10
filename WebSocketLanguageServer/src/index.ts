@@ -7,7 +7,7 @@ import {createConnection, createServerProcess, forward} from 'vscode-ws-jsonrpc/
 import {InitializeParams, InitializeRequest, Message} from 'vscode-languageserver';
 import config from './config.js';
 
-const MAX_MESSAGE_SIZE = 11000;
+const MAX_MESSAGE_SIZE = 100000;
 
 const launchLanguageServer = (socket: IWebSocket) => {
     const serverName: string = 'UVLS';
