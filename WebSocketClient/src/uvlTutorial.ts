@@ -13,13 +13,20 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         uvlTutorialButton.addEventListener('click', function () {
             let tutorialPageCounter = 0;
             tutorialToggle = !tutorialToggle;
-            let mainDiv = document.getElementById("main-div");
-            let splitter = document.getElementById("splitter");
+            let mainDiv = document.getElementById("third");
+            const secondPane = document.getElementById("second");
+            const thirdPane = document.getElementById("third");
             if (tutorialToggle) {
-                splitter!.style.width = "75%";
+                if (secondPane && thirdPane) {
+                    secondPane.style.width = "50%";
+                    thirdPane.style.width = "50%";
+                }
                 setTutorialPage(mainDiv, tutorialPageCounter);
             } else {
-                splitter!.style.width = "100%";
+                if (secondPane && thirdPane) {
+                    secondPane.style.width = "100%";
+                    thirdPane.style.width = "0%";
+                }
                 let newDiv = document.getElementById("uvl-tutorial-div");
                 mainDiv!.removeChild(newDiv!);
             }
