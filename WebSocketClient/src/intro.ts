@@ -17,6 +17,8 @@ export const initIntroJS = () => {
             element: "#separator", intro: 'You can change the size of the editor and the visualization with your mouse.'
         }, {
             element: "#uvl-tutorialButton", intro: 'If you are not familiar with UVL or need a little refresh, click here to get a quick tutorial of the language.'
+        }, {
+            element: "#example-dropdown", intro: 'Click here to load an UVL example from a list of different examples.'
         }],
     });
 
