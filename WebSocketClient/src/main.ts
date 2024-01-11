@@ -327,7 +327,10 @@ export let globalEditor: editor.IStandaloneCodeEditor | null;
 
 
 function getInitialFm() {
-    let initialFm = "features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1";
+    let initialFm = `features
+    HelloWorld
+        optional
+            Greetings`;
     const storedFm = window.localStorage.getItem("fm");
     if (storedFm !== null) {
         initialFm = storedFm;
