@@ -9,6 +9,7 @@ export function initExamples(editor: editor.IStandaloneCodeEditor) {
     initExample("Default", defaultExampleText);
     initExample("Ice Cream", iceCreamExampleText);
     initExample("Computer", computerExampleText);
+    initExample("Elevator", elevatorExampleText);
 }
 
 const defaultExampleText = `features
@@ -74,6 +75,45 @@ const computerExampleText = `features
 constraints
     Dedicated => Liquid
     sum(powerConsumption) > 300 => StrongPSU`
+
+const elevatorExampleText = `//Example from FeatureIDE Book
+features
+    Elevator {abstract}
+        mandatory
+            Behavior {abstract}
+                mandatory
+                    Modes {abstract}
+                        alternative
+                            Sabbath
+                            FIFO
+                            ShortestPath
+                optional
+                    Service
+                    Priorities {abstract}
+                        or
+                            RushHour
+                            FloorPriority
+                            PersonPriority
+        optional
+            VoiceOutput
+            CallButtons {abstract}
+                alternative
+                    DirectedCall
+                    UndirectedCall
+            Security {abstract}
+                mandatory
+                    Permission {abstract}
+                        or
+                            FloorPermission
+                            PermissionControl
+            Safety {abstract}
+                optional
+                    Overloaded
+
+constraints
+    CallButtons | Sabbath
+    DirectedCall => ShortestPath
+    UndirectedCall => FIFO | ShortestPath`
 
 function initExample(name: string, content: string){
     const dropdown = document.getElementById("examples-dropdown");
