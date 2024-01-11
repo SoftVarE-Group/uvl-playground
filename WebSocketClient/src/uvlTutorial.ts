@@ -4,6 +4,7 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 import {editor} from "monaco-editor";
 import IStandaloneDiffEditorConstructionOptions = editor.IStandaloneDiffEditorConstructionOptions;
+import { sendGenerateGraphCommand } from "./main";
 
 export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
     let tutorialToggle = false;
@@ -22,6 +23,8 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
                     thirdPane.style.width = "50%";
                 }
                 setTutorialPage(mainDiv, tutorialPageCounter);
+                sendGenerateGraphCommand();
+
             } else {
                 if (secondPane && thirdPane) {
                     secondPane.style.width = "100%";
@@ -43,7 +46,7 @@ export default function initUvlTutorial(editor: editor.IStandaloneCodeEditor) {
         mainDiv.appendChild(tutorialDiv);
 
         let modifiedCode = tutorialContent[pageNumber].codeListing;
-        let originalCode = tutorialContent[pageNumber - 1].codeListing;
+        let originalCode = pageNumber !== 0 ? tutorialContent[pageNumber - 1].codeListing : undefined;
         if (modifiedCode && originalCode) {
             const paragraph = document.createElement("p");
             paragraph.id = "hint";
