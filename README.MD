@@ -89,3 +89,24 @@ WebSocketClient
 ```
 
 ## WebSocketLanguageServer
+
+- contains the wrapper for the language server
+
+```
+WebSocketLanguageServer
+├── build //contains the minified production build
+│   ├── config.js
+│   ├── config.js.map
+│   ├── index.js
+│   └── index.js.map
+├── Dockerfile
+├── lib
+│   └── uvls //the language server executable compiled from https://github.com/Universal-Variability-Language/uvl-lsp
+├── node_modules
+├── package.json
+├── package-lock.json
+├── src
+│   ├── config.ts
+│   └── index.ts
+└── tsconfig.json
+```
