@@ -19,6 +19,8 @@ export const initIntroJS = () => {
             element: "#uvl-tutorialButton", intro: 'If you are not familiar with UVL or need a little refresh, click here to get a quick tutorial of the language.'
         }, {
             element: ".dropdown-wrapper", intro: 'Click here to load an UVL example from a list of different examples.'
+        }, {
+            element: "#theme-toggle", intro: 'Click here to change between light and dark mode.'
         }],
     });
 
