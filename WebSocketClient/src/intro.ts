@@ -44,7 +44,11 @@ export const initIntroJS = () => {
         const helperLayer = document.getElementsByClassName("tmpClass");
         setTimeout(() => {
             if(helperLayer[0] instanceof HTMLElement){
-                helperLayer[0].style["box-shadow"] = "rgb(255, 255, 255) 0px 0px 1px 2px, rgba(230, 230, 230, 0.44) 0px 0px 0px 5000px";
+                if(document.documentElement.getAttribute('data-theme') === "dark"){
+                    helperLayer[0].style["box-shadow"] = "rgb(255, 255, 255) 0px 0px 1px 2px, rgba(230, 230, 230, 0.44) 0px 0px 0px 5000px";
+                }else{
+                    helperLayer[0].style["box-shadow"] = "rgb(0, 0, 0) 0px 0px 1px 2px, rgba(0, 0, 0, 0.8) 0px 0px 0px 5000px";
+                }
             }
         }, 100);
     });

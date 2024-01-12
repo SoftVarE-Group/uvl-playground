@@ -255,7 +255,7 @@ export const startUvlClient = async () => {
         "editor.fontSize": 14,
         "workbench.colorTheme": "Default Dark Modern",
         theme: "vs-dark"
-    }`);
+    }`);    
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
     fileID = uuidv4();

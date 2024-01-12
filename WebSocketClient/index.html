@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -13,6 +13,11 @@
 </head>
 <body>
 <div class="header">
+    <button
+    id="theme-toggle"
+    type="button"
+    data-theme-toggle
+    aria-label="Change to light theme">🌙</button>
     <h1>UVL Playground</h1>
     <div class="tutorials">
         <div id="tutorialButton">
@@ -83,6 +88,73 @@
                 href="https://github.com/Universal-Variability-Language/uvl-lsp">UVL Language Server</a>. To fully
         use all features use the UVLS - Universal Variability Language Server extension for visual studio code. </p>
 </div>
+
+<script type="module">
+    import {
+    updateUserConfiguration
+} from '@codingame/monaco-vscode-configuration-service-override';
+    // get theme on page load
+    let theme = localStorage.getItem("theme");
+    if(theme === null){
+        theme = "dark";
+        localStorage.setItem("theme", "dark");
+    }
+    document.querySelector("html").setAttribute("data-theme", theme);
+
+    const button = document.querySelector("[data-theme-toggle]");
+    const newCta = theme === "dark" ? "🌙" : "☀️";
+        button.innerText = newCta;  
+    setTimeout(() => {
+        if(theme === "dark"){
+            updateUserConfiguration(`{
+                "editor.fontSize": 14,
+                "workbench.colorTheme": "Default Dark Modern",
+                theme: "vs-dark"
+            }`);
+        }else{
+            updateUserConfiguration(`{
+                "editor.fontSize": 14,
+                "workbench.colorTheme": "Default Light Modern",
+                theme: "vs-light"
+            }`);
+        }
+    }, 500);
+
+
+    button.addEventListener("click", () => {
+        console.log("hello");
+        let newTheme = theme === "dark" ? "light" : "dark";
+        // update the button text
+        const newCta = newTheme === "dark" ? "🌙" : "☀️";
+        button.innerText = newCta;  
+
+        // use an aria-label if you are omitting text on the button
+        // and using sun/moon icons, for example
+        button.setAttribute("aria-label", newCta);
+
+        // update theme attribute on HTML to switch theme in CSS
+        document.querySelector("html").setAttribute("data-theme", newTheme);
+        if(newTheme === "dark"){
+            updateUserConfiguration(`{
+                "editor.fontSize": 14,
+                "workbench.colorTheme": "Default Dark Modern",
+                theme: "vs-dark"
+            }`);
+        }else{
+            updateUserConfiguration(`{
+                "editor.fontSize": 14,
+                "workbench.colorTheme": "Default Light Modern",
+                theme: "vs-light"
+            }`);
+        }
+
+
+        // update in local storage
+        localStorage.setItem("theme", newTheme);
+
+        theme = newTheme;
+    });
+</script>
 
 <script type="module">
     import {startUvlClient} from "./src/main.ts";
