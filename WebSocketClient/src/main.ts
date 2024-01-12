@@ -291,14 +291,14 @@ export const startUvlClient = async () => {
             } else {
                 vscode.commands.executeCommand("deleteLeft");
             }
-            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
+            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines! (Because of performance reasons)`);
         } else if (numberCharacters > config.MAX_NUMBER_CHARACTERS) {
             if (numberCharacters > config.MAX_NUMBER_CHARACTERS + 1) {
                 vscode.commands.executeCommand("undo");
             } else {
                 vscode.commands.executeCommand("deleteLeft");
             }
-            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters!`);
+            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters! (Because of performance reasons)`);
         }
         debouncedSave();
         if (updateGraph && debounceGenGraph !== undefined) {

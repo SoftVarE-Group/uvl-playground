@@ -41,7 +41,7 @@ export function uploadFile(): Promise<string> {
                 stringPromise.then((res) => {
                     const lineCount = res.split('\n').length;
                     if(lineCount > config.MAX_NUMBER_LINES){
-                        displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
+                        displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines! (Because of performance reasons)`);
                         resolve(res.split('\n').slice(0, config.MAX_NUMBER_LINES - 1).reduce((acc, curr) => acc + curr + "\n", ""));
                     }else{
                         resolve(res);
