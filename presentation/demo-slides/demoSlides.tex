@@ -1,0 +1,285 @@
+\documentclass[
+	aspectratio=169, % default is 43
+	8pt, % font size, default is 11pt
+	%handout, % handout mode without animations, comment out to add animations
+	%nosectionframes, % disable automatic frames at the begin of each section (default: sectiontitleslides in beamer mode and sectionoverviews in handout mode)
+	%sectiontitleslides, % enable an automatic section title slide at the begin of each section
+	%sectionoverviews, % enable an automatic section overview at the begin of each section
+	%uniqueslidenumber, % will uniquely identify pages with overlays by a little suffix
+	%darkmode, % switch to dark mode
+]{beamer}
+
+\usepackage{../beamerthemeuulm} % use the inofficial uulm beamer theme
+\setfaculty{infIngPsy} % set the color scheme for your faculty here [med/infIngPsy/math/nat]
+
+%\institutelogo{sp} % set the institute logo
+%\universitylogo{uulm} % set a new university logo
+%\clearuniversitylogo % clear existing university logo
+%\clearinstitutelogo % clear existing institute logo
+%\uulmlogos{sp,uulm} % freely configure multiple logos (overwrites any other logo setting)
+%\uulmlogos{softvare,sp,uulm} % include softvare working group logo
+
+%\usepackage[ngerman]{babel} % use this line for slides in German
+
+%\setmycolumnsdefault{keep} % change the default for 'mycolumns' environment (e.g., 'keep' to animate all column environments per default)
+
+%\includeonlyframes{current} % default mechanism of beamer to include only labeled frames, can be used for debugging or drafting
+
+\title[UVL Playground]{UVL Playground} % short title is used for the slide footer but optional
+\subtitle[Final Presentation]{Final Presentation} % subtitles are optional at all
+\author[Dommer, Vill]{Jannis Dommer, Stefan Vill} % short author title is used for the slide footer but optional
+\date{10.01.2024} % use a particular date here if needed
+
+\begin{document}
+
+\maketitle % title page with default picture
+
+\begin{frame}{Motivation}
+	\centering
+	\pic[width=0.735\textwidth]{../pics/screenshots/playgrounds.png}
+
+\end{frame}
+
+\begin{frame}{Motivation}
+	\centering
+	\pic[width=0.5\textwidth]{../pics/screenshots/uvls_ts.png}
+\end{frame}
+
+\begin{frame}{Architektur}
+	\begin{mycolumns}[columns=2,t]
+		\pic[width=\textwidth]{../pics/screenshots/option1_final.png}
+		\mynextcolumn
+		\pic[width=\textwidth]{../pics/screenshots/option2_final_fertig_2.png}
+	\end{mycolumns}
+\end{frame}
+
+\begin{frame}{Probleme mit WebAssembly}
+	\begin{itemize}
+		\item Wenig WebAssembly kompatible dependencies
+		\item Systemaufrufe
+		\item UVLS enthält Webserver für config
+		\item Treesitter mit C-Schnittstelle
+		\item Z3 mit stdin / stdout Schnittstelle
+		\item Module stark gekoppelt
+		\item Erzwingt fork
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Dedizierter UVL Language Server}
+	\begin{itemize}
+		\item Kommunikation auf Websockets umstellen
+		\item Monaco mit Language Server Protocol ausgestattet
+		\item Multi-User UVLS
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Infrastruktur und Tooling}
+	\begin{mycolumns}[columns=2]
+		\begin{itemize}
+			\item Traefik Reverseproxy als TLS Endpoint
+			\item CI / CD Pipeline
+			\item Sonarqube Linter
+		\end{itemize}
+		\mynextcolumn
+		\pic[width=0.9\textwidth]{../pics/screenshots/traefik.png}
+		\pic[width=\textwidth]{../pics/screenshots/sonarqube.png}
+	\end{mycolumns}
+\end{frame}
+
+\begin{frame}
+	\Huge
+	\centering
+	\textless \texttt{/liveDemo}\textgreater
+
+\end{frame}
+
+\begin{frame}{Zusätzliche Features}
+	\begin{mycolumns}[columns=2]
+		\begin{itemize}
+			\item Automatisches Update von Feature Model
+			\item Feature Model im Darkmode
+			\item Tutorial für Playground und UVL
+			\item Upload / Download
+			\item Laden von Beispielen
+			\item Größenlimitierung von Feature Modellen
+			\item Speichern von Feature Modellen im Browser
+			\item Reconnects bei Verbindungsabbruch
+		\end{itemize}
+		\mynextcolumn
+		\pic[width=\textwidth]{../pics/screenshots/playground.png}
+	\end{mycolumns}
+\end{frame}
+
+%\section{Old Slide Layouts (Deprecated)}
+%
+%\begin{frame}{\insertsection}
+%	\begin{note}{Note}
+%		The following slide layouts are replaced by the \texttt{mycolumns}-envrionment and therefore deprecated.
+%
+%		Please do not use them anymore, as they are going to be removed from the template in the future.
+%	\end{note}
+%\end{frame}
+%
+%\subsection{Left and Right}
+%\begin{frame}{\insertsubsection}
+%    \leftandright{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		Both columns are visible in \textbf{handout}, \textbf{slide}, and \textbf{recording} mode (i.e., there are no animations).
+%	\end{note}
+%\end{frame}
+%
+%\subsection{Left, Middle, and Right}
+%\begin{frame}{\insertsubsection}
+%	\leftmiddleandright{
+%		This is an example text that is shown in the \textbf{left column}.
+%	}{
+%		This is an example text that is shown in the \textbf{middle column}.
+%	}{
+%		This is an example text that is shown in the \textbf{right column}.
+%	}
+%	\vfill
+%	\begin{note}{Explanation}
+%		All columns are visible in \textbf{handout}, \textbf{slide}, and \textbf{recording} mode (i.e., there are no animations).
+%	\end{note}
+%\end{frame}
+%
+%%\recordingtrue % special recording mode for use with a greenscreen, gives you space to show yourself in a layer in front of the slides, has no effect in the handout mode
+%
+%\subsection{Left then Right}
+%\begin{frame}{\insertsubsection}
+%    \leftthenright{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout} mode, both columns are visible.
+%
+%		In \textbf{slide} and \textbf{recording} mode, only the left column is shown at the beginning, then both columns.
+%	\end{note}
+%\end{frame}
+%
+%\begin{frame}{Right then Left}
+%    \rightthenleft{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout} mode, both columns are visible.
+%
+%		In \textbf{slide} and \textbf{recording} mode, only the right column is shown at the beginning, then both columns.
+%	\end{note}
+%\end{frame}
+%
+%\subsection{Left, Middle, then Right}
+%\begin{frame}{\insertsubsection}
+%    \leftmiddlethenright{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{middle column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout} mode, all columns are visible.
+%
+%		In \textbf{slide} and \textbf{recording} mode, only the left column is shown at the beginning, then additionally the middle column, and finally all columns.
+%	\end{note}
+%\end{frame}
+%
+%\begin{frame}{Right, Middle, then Left}
+%    \rightmiddlethenleft{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{middle column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout} mode, all columns are visible.
+%
+%		In \textbf{slide} and \textbf{recording} mode, only the right column is shown at the beginning, then additionally the middle column, and finally all columns.
+%	\end{note}
+%\end{frame}
+%
+%\subsection{Left or Right}
+%\begin{frame}{\insertsubsection}
+%    \leftorright{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout mode}, both columns are visible.
+%
+%		In \textbf{slide mode}, only the left column is shown at the beginning and then both columns (cf. \textbf{Left then Right}).
+%
+%		In \textbf{recording mode}, only the left column is shown at the beginning, then an empty slide (to walk to the other side), and finally only the right column.
+%	\end{note}
+%\end{frame}
+%
+%\begin{frame}{Right or Left}
+%    \rightorleft{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout mode}, both columns are visible.
+%
+%		In \textbf{slide mode}, only the right column is shown at the beginning and then both columns (cf. \textbf{Right then Left}).
+%
+%		In \textbf{recording mode}, only the right column is shown at the beginning, then an empty slide (to walk to the other side), and finally only the left column.
+%	\end{note}
+%\end{frame}
+%
+%\subsection{Left, Middle, or Right}
+%\begin{frame}{\insertsubsection}
+%    \leftmiddleorright{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{middle column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout mode}, all columns are visible.
+%
+%		In \textbf{slide mode}, only the left column is shown at the beginning, then additionally the middle column, and finally all columns (cf. \textbf{Left, Middle, then Right}).
+%
+%		In \textbf{recording mode}, only the left column is shown at the beginning, then only the middle column, and finally only the right column (again interleaved with empty slides).
+%	\end{note}
+%\end{frame}
+%
+%\begin{frame}{Right, Middle, or Left}
+%    \rightmiddleorleft{
+%        This is an example text that is shown in the \textbf{left column}.
+%    }{
+%        This is an example text that is shown in the \textbf{middle column}.
+%    }{
+%        This is an example text that is shown in the \textbf{right column}.
+%    }
+%	\vfill
+%	\begin{note}{Explanation}
+%		In \textbf{handout mode}, all columns are visible.
+%
+%		In \textbf{slide mode}, only the right column is shown at the beginning, then additionally the middle column, and finally all columns (cf. \textbf{Right, Middle, then Left}).
+%
+%		In \textbf{recording mode}, only the right column is shown at the beginning, then only the middle column, and finally only the left column (again interleaved with empty slides).
+%	\end{note}
+%\end{frame}
+
+\end{document}

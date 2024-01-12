@@ -29,7 +29,7 @@ import initUvlTutorial from './uvlTutorial.ts';
 import {buildWorkerDefinition} from 'monaco-editor-workers';
 import {initIntroJS} from "./intro.ts";
 import {downloadFile, uploadFile} from "./ImportExportFiles.ts";
-import {initExamples} from "./examples.ts";
+import {initExamples} from "../assets/uvlExamples.ts";
 import {aggregateCharacters, displayEditorError, displayEditorErrorAtContent} from "./util.ts";
 import IIdentifiedSingleEditOperation = editor.IIdentifiedSingleEditOperation;
 
@@ -255,7 +255,7 @@ export const startUvlClient = async () => {
         "editor.fontSize": 14,
         "workbench.colorTheme": "Default Dark Modern",
         theme: "vs-dark"
-    }`);
+    }`);    
 
     const fileSystemProvider = new RegisteredFileSystemProvider(false);
     fileID = uuidv4();
@@ -291,14 +291,14 @@ export const startUvlClient = async () => {
             } else {
                 vscode.commands.executeCommand("deleteLeft");
             }
-            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines!`);
+            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_LINES} Lines! (Because of performance reasons)`);
         } else if (numberCharacters > config.MAX_NUMBER_CHARACTERS) {
             if (numberCharacters > config.MAX_NUMBER_CHARACTERS + 1) {
                 vscode.commands.executeCommand("undo");
             } else {
                 vscode.commands.executeCommand("deleteLeft");
             }
-            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters!`);
+            displayEditorErrorAtContent(`The Editor only allows content up to ${config.MAX_NUMBER_CHARACTERS} Characters! (Because of performance reasons)`);
         }
         debouncedSave();
         if (updateGraph && debounceGenGraph !== undefined) {
@@ -327,7 +327,10 @@ export let globalEditor: editor.IStandaloneCodeEditor | null;
 
 
 function getInitialFm() {
-    let initialFm = "features\n\tfeature1\n\t\tor\n\t\t\tfeature2\n\t\t\tfeature3\n\nconstraints\n\tfeature1";
+    let initialFm = `features
+    HelloWorld
+        optional
+            Greetings`;
     const storedFm = window.localStorage.getItem("fm");
     if (storedFm !== null) {
         initialFm = storedFm;
