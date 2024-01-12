@@ -41,7 +41,7 @@ To change the machine on which the playground is hosted, you need to take the fo
 - change the `SSH_PRIVATE_KEY` github secret to the new private key
 - change the variables for hostname, username, email and working directory on the server at the beginning of the workflow files under `.github/workflows`
 
-# Hosting your own uvl playground
+## Hosting your own uvl playground
 
 - To host your own uvl playground setup a machine with docker
 - Clone the repository
@@ -53,7 +53,7 @@ To change the machine on which the playground is hosted, you need to take the fo
 - run `docker compose up --build -d`
 - This will run the uvl playground behind a reverse proxy with letsencrypt certificates
 
-# Hosting your own uvl playground (locally) without letsencrypt
+## Hosting your own uvl playground (locally) without letsencrypt
 
 - run `docker compose -f docker-compose-http.yaml up --build -d`
 
@@ -66,7 +66,7 @@ To change the machine on which the playground is hosted, you need to take the fo
 ```
 WebSocketClient
 ├── assets //contains all relevant pictures as well as the example and tutorial feature models
-├── dark_mode_dev_env.sh //hacky script to workaround vite dev error
+├── dark_mode_dev_env.sh //script to workaround vite dev error
 ├── dist //contains the production build
 ├── Dockerfile
 ├── index.html
