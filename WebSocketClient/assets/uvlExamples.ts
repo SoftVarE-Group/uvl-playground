@@ -13,13 +13,9 @@ export function initExamples(editor: editor.IStandaloneCodeEditor) {
 }
 
 const defaultExampleText = `features
-    feature1
-        or
-            feature2
-            feature3
-    
-constraints
-    feature1`;
+HelloWorld
+    optional
+        Greetings`;
 const iceCreamExampleText = `features
     "Ice Cream" {extended__}
         mandatory
