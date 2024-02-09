@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   traefik:
+    restart: on-failure
     image: traefik:v3.0
     container_name: traefik
     ports:
